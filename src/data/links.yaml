@@ -43,6 +43,13 @@
   tag: SNS
   order: 30
   icon: wiki.thusns.net
+- name: EasyCompute
+  url: https://easycompute.cs.tsinghua.edu.cn/login
+  category: 清华入口
+  description: 清华 EasyCompute 登录入口。
+  tag: 计算
+  order: 40
+  icon: easycompute.cs.tsinghua.edu.cn
 - name: DeepL
   url: https://www.deepl.com/translator
   category: 常用工具
@@ -57,6 +64,13 @@
   tag: 代码
   order: 40
   icon: github.com
+- name: DeepSeek
+  url: https://chat.deepseek.com/sign_in
+  category: 常用工具
+  description: DeepSeek 对话登录入口。
+  tag: AI
+  order: 45
+  icon: chat.deepseek.com
 - name: 临时邮箱
   url: https://beeinbox.com/zh-CN
   category: 常用工具
