@@ -64,6 +64,13 @@
   tag: 代码
   order: 40
   icon: github.com
+- name: ChatGPT
+  url: https://chatgpt.com/
+  category: 常用工具
+  description: ChatGPT 对话入口。
+  tag: AI
+  order: 44
+  icon: chatgpt.com
 - name: DeepSeek
   url: https://chat.deepseek.com/sign_in
   category: 常用工具
