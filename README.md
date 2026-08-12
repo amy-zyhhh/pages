@@ -203,7 +203,7 @@ node scripts/inforss/fetch.mjs --from 20260810 --to 20260812
 npm.cmd run fetch:inforss:month
 ```
 
-按月补抓脚本会从当前月份开始，向前推进；每次运行只抓取一个月的信息，并把下一次要抓取的月份记录在本机的 `scripts/inforss/month-state.json` 中。这个状态文件不会提交到 GitHub。
+按月补抓脚本会从当前月份开始，向前推进；每次运行只抓取一个月的信息，并把下一次要抓取的月份记录在 `scripts/inforss/month-state.json` 中。这个状态文件会随归档一起提交，确保无人值守任务每天都能继续向前补抓。
 
 指定某个月份补抓：
 
@@ -337,7 +337,31 @@ npm.cmd run daily:inforss
 4. 如果归档数据有变化，就提交并推送当前分支到 GitHub。
 5. 如果没有新归档内容，就不提交。
 
-注意：每日任务不会自动提交 `src/`、`scripts/`、`README.md`、`package.json` 等代码和配置改动。页面代码、抓取配置、README 的修改仍然需要你手动提交，避免把未完成的代码一起推送。
+注意：日常任务不会自动提交 `src/`、`scripts/`、`README.md`、`package.json` 等代码和配置改动。页面代码、抓取配置、README 的修改仍然需要你手动提交，避免把未完成的代码一起推送。
+
+安装按月补抓计划任务：
+
+```powershell
+npm.cmd run install:inforss-backfill-task
+```
+
+默认会注册一个 Windows 计划任务：
+
+```text
+Pages InfoRSS Monthly Backfill
+```
+
+按月补抓任务每天 03:30 在本机运行：
+
+```powershell
+npm.cmd run backfill:inforss:month
+```
+
+它每次只补抓一个月的信息，抓完后会构建、提交 `data-generated/inforss` 和 `scripts/inforss/month-state.json`，然后推送当前分支。等历史内容补全后，可以停止这个任务：
+
+```powershell
+npm.cmd run uninstall:inforss-backfill-task
+```
 
 修改计划任务时间：
 
@@ -401,6 +425,9 @@ scripts/inforss/sources.json                InfoRSS 抓取源配置
 scripts/inforss/adapters/                   InfoRSS 站点适配器
 scripts/inforss/daily-update.ps1            每日本地抓取、构建、提交和推送
 scripts/inforss/install-daily-task.ps1       安装 Windows 每日计划任务
+scripts/inforss/install-monthly-backfill-task.ps1  安装 Windows 按月补抓计划任务
+scripts/inforss/uninstall-monthly-backfill-task.ps1  停止 Windows 按月补抓计划任务
+scripts/inforss/month-state.json             按月补抓进度
 data-generated/inforss/                     InfoRSS 本地归档数据
 ```
 

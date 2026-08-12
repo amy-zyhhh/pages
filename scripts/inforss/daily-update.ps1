@@ -1,5 +1,7 @@
 param(
   [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path,
+  [ValidateSet("daily", "month")]
+  [string]$Mode = "daily",
   [string]$Branch = "",
   [string]$CommitMessage = "",
   [string]$LogDir = ""
@@ -14,7 +16,7 @@ if (-not $LogDir) {
 }
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$logFile = Join-Path $LogDir ("daily-update-{0}.log" -f (Get-Date -Format "yyyyMMdd"))
+$logFile = Join-Path $LogDir ("{0}-update-{1}.log" -f $Mode, (Get-Date -Format "yyyyMMdd"))
 
 function Write-Log {
   param([string]$Message)
@@ -77,7 +79,7 @@ function Run-Step {
   Write-Log "Done: $Name"
 }
 
-$lockFile = Join-Path $LogDir "daily-update.lock"
+$lockFile = Join-Path $LogDir ("{0}-update.lock" -f $Mode)
 if (Test-Path -LiteralPath $lockFile) {
   $lockAgeMinutes = ((Get-Date) - (Get-Item -LiteralPath $lockFile).LastWriteTime).TotalMinutes
   if ($lockAgeMinutes -lt 120) {
@@ -99,18 +101,27 @@ try {
   }
 
   if (-not $CommitMessage) {
-    $CommitMessage = "Update InfoRSS archive {0}" -f (Get-Date -Format "yyyyMMdd")
+    if ($Mode -eq "month") {
+      $CommitMessage = "Backfill InfoRSS archive {0}" -f (Get-Date -Format "yyyyMMdd")
+    } else {
+      $CommitMessage = "Update InfoRSS archive {0}" -f (Get-Date -Format "yyyyMMdd")
+    }
   }
 
   Write-Log "Repository: $RepoRoot"
   Write-Log "Branch: $Branch"
+  Write-Log "Mode: $Mode"
 
-  Run-Step "Fetch InfoRSS" "node" @("scripts/inforss/fetch.mjs", "--daily")
+  if ($Mode -eq "month") {
+    Run-Step "Fetch InfoRSS month" "node" @("scripts/inforss/fetch-month.mjs")
+  } else {
+    Run-Step "Fetch InfoRSS daily" "node" @("scripts/inforss/fetch.mjs", "--daily")
+  }
   Run-Step "Build site" "npm.cmd" @("run", "build")
 
-  Run-Step "Stage InfoRSS archive" "git" @("add", "data-generated/inforss")
+  Run-Step "Stage InfoRSS archive" "git" @("add", "data-generated/inforss", "scripts/inforss/month-state.json")
 
-  & git diff --cached --quiet -- data-generated/inforss
+  & git diff --cached --quiet -- data-generated/inforss scripts/inforss/month-state.json
   $hasStagedArchiveChanges = $LASTEXITCODE -ne 0
 
   if (-not $hasStagedArchiveChanges) {
@@ -121,7 +132,7 @@ try {
   Run-Step "Commit InfoRSS archive" "git" @("commit", "-m", $CommitMessage)
   Run-Step "Push branch" "git" @("push", "origin", $Branch)
 
-  Write-Log "Daily InfoRSS update completed."
+  Write-Log "InfoRSS $Mode update completed."
 }
 catch {
   Write-Log "Error: $($_.Exception.Message)"

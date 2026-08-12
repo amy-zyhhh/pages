@@ -13,7 +13,6 @@ yarn-error.log*
 pnpm-debug.log*
 astro-dev.log
 logs/
-scripts/inforss/month-state.json
 
 
 # environment variables
