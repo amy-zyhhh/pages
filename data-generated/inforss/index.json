@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-12T09:17:18.919Z",
+  "lastScrapeAt": "2026-08-12T09:17:18.919Z",
+  "total": 0,
+  "errorCount": 0,
+  "sources": [
+    {
+      "id": "tsinghua-info-all",
+      "name": "清华信息门户"
+    },
+    {
+      "id": "tsinghua-info-xs",
+      "name": "清华信息门户"
+    }
+  ],
+  "tags": [],
+  "errors": [],
+  "posts": []
+}
