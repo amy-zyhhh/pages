@@ -17,7 +17,7 @@ export async function fetchTsinghuaInfo(source, options = {}) {
       throw new Error("\u672a\u80fd\u4ece\u5217\u8868\u9875 Cookie \u4e2d\u8bfb\u53d6 XSRF-TOKEN");
     }
 
-    const pages = Number(source.pages || 3);
+    const pages = getPageLimit(source, dateRange);
     const detailConcurrency = Number(source.detailConcurrency || 6);
     for (let page = 1; page <= pages; page += 1) {
       const listUrl = buildApiUrl(source, "/b/info/xxfb_fg/xnzx/template/more", {
@@ -35,7 +35,7 @@ export async function fetchTsinghuaInfo(source, options = {}) {
 
       const pagePosts = await mapLimit(items, detailConcurrency, async (item) => {
         if (!item?.xxid) return;
-        const itemDate = normalizeDate(item.fbsj || item.time || "");
+        const itemDate = normalizeDate(item.time || item.fbsj || item.time_mobile || "");
         const rangeState = getDateRangeState(itemDate, dateRange);
         if (rangeState === "older") {
           hasOlderItem = true;
@@ -90,6 +90,12 @@ function getDateRangeState(date, dateRange) {
   return "in-range";
 }
 
+function getPageLimit(source, dateRange) {
+  const configuredPages = Number(source.pages || 3);
+  if (!dateRange) return configuredPages;
+  return Number(source.backfillPages || source.dateRangePages || configuredPages);
+}
+
 async function mapLimit(items, limit, task) {
   const results = [];
   const workers = Array.from({ length: Math.max(1, limit) }, async (_, workerIndex) => {
@@ -116,7 +122,7 @@ async function fetchDetail(source, item, csrf, cookieJar) {
   const detail = detailPayload?.object?.xxDto || item;
   const contentHtml = decodeHtml(detail.nr_show || detail.nr || item.nr_show || item.nr || "");
   const title = decodeHtml(detail.bt_show || detail.bt || item.bt_show || item.bt || "\u672a\u547d\u540d\u901a\u77e5");
-  const time = detail.fbsj || item.time || item.fbsj || "";
+  const time = detail.time || item.time || normalizeTimestamp(detail.fbsj || item.fbsj) || "";
   const date = normalizeDate(time);
   const sourceUrl = getDetailSourceUrl(source, detail, item);
   const attachments = normalizeAttachments(source.apiBaseUrl, detail.fjs_template || []);
@@ -224,8 +230,22 @@ function normalizeUrlKey(value) {
 
 function normalizeDate(value) {
   if (!value) return "";
+  if (typeof value === "number") return normalizeDate(normalizeTimestamp(value));
   const match = String(value).match(/\d{4}[-/]\d{2}[-/]\d{2}/);
   return match ? match[0].replaceAll("-", "").replaceAll("/", "") : "";
+}
+
+function normalizeTimestamp(value) {
+  const timestamp = Number(value);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return "";
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hour}:${minute}`;
 }
 
 function normalizeAttachments(base, attachments) {

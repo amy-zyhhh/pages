@@ -7,6 +7,7 @@
     "listPageUrl": "https://info.tsinghua.edu.cn/f/info/xxfb_fg/xnzx/template/more?lmid=LM_BGTG",
     "apiBaseUrl": "https://info.tsinghua.edu.cn",
     "pages": 3,
+    "backfillPages": 40,
     "params": {
       "oType": "mr",
       "lmid": "all",
@@ -23,6 +24,7 @@
     "listPageUrl": "https://info.tsinghua.edu.cn/f/info/xxfb_fg/xnzx/template/more?lmid=LM_BGTG",
     "apiBaseUrl": "https://info.tsinghua.edu.cn",
     "pages": 3,
+    "backfillPages": 40,
     "params": {
       "oType": "xs",
       "lmid": "all",

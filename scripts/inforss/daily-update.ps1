@@ -119,9 +119,14 @@ try {
   }
   Run-Step "Build site" "npm.cmd" @("run", "build")
 
-  Run-Step "Stage InfoRSS archive" "git" @("add", "data-generated/inforss", "scripts/inforss/month-state.json")
+  $stagePaths = @("data-generated/inforss")
+  if (Test-Path -LiteralPath (Join-Path $RepoRoot "scripts/inforss/month-state.json")) {
+    $stagePaths += "scripts/inforss/month-state.json"
+  }
 
-  & git diff --cached --quiet -- data-generated/inforss scripts/inforss/month-state.json
+  Run-Step "Stage InfoRSS archive" "git" (@("add") + $stagePaths)
+
+  & git diff --cached --quiet -- @stagePaths
   $hasStagedArchiveChanges = $LASTEXITCODE -ne 0
 
   if (-not $hasStagedArchiveChanges) {
@@ -130,7 +135,19 @@ try {
   }
 
   Run-Step "Commit InfoRSS archive" "git" @("commit", "-m", $CommitMessage)
-  Run-Step "Push branch" "git" @("push", "origin", $Branch)
+  try {
+    Run-Step "Push branch" "git" @("push", "origin", $Branch)
+  }
+  catch {
+    $remoteUrl = (& git remote get-url origin).Trim()
+    if ($remoteUrl -match '^git@github\.com:(.+)\.git$') {
+      $httpsUrl = "https://github.com/$($Matches[1]).git"
+      Write-Log "SSH push failed. Retry with HTTPS remote: $httpsUrl"
+      Run-Step "Push branch over HTTPS" "git" @("push", $httpsUrl, $Branch)
+    } else {
+      throw
+    }
+  }
 
   Write-Log "InfoRSS $Mode update completed."
 }
