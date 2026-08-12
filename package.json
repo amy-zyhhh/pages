@@ -8,6 +8,11 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "fetch:inforss": "node scripts/inforss/fetch.mjs",
+    "fetch:inforss:daily": "node scripts/inforss/fetch.mjs --daily",
+    "fetch:inforss:month": "node scripts/inforss/fetch-month.mjs",
+    "daily:inforss": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/daily-update.ps1",
+    "install:inforss-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/install-daily-task.ps1",
     "preview": "astro preview",
     "astro": "astro"
   },

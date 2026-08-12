@@ -5,38 +5,26 @@ import settings from "../../data/settings.json";
 import { parseInfoRssIndex, type InfoRssPost } from "../../utils/infoRssPosts";
 
 export function getStaticPaths() {
-	const indexPath = join(process.cwd(), "InfoRSS", "index.json");
+	const indexPath = join(process.cwd(), "data-generated", "inforss", "index.json");
 	if (!existsSync(indexPath)) return [];
-
-	const htmlModules = import.meta.glob("../../../InfoRSS/html/**/*.html", {
-		query: "?raw",
-		import: "default",
-		eager: true,
-	});
 	const indexRaw = readFileSync(indexPath, "utf-8");
 	const posts = parseInfoRssIndex(indexRaw);
 
 	return posts.map((post) => {
-		const htmlPath = `../../../InfoRSS/${post.htmlPath}`;
-		const htmlContent = htmlModules[htmlPath];
-		if (!htmlContent) {
-			throw new Error(`Missing HTML module for ${htmlPath}`);
-		}
-
 		return {
 			params: { slug: post.slug },
-			props: { post, htmlContent },
+			props: { post },
 		};
 	});
 }
 
-const { post, htmlContent } = Astro.props as {
+const { post } = Astro.props as {
 	post: InfoRssPost;
-	htmlContent: string;
 };
 const basePath = import.meta.env.BASE_URL.endsWith("/")
 	? import.meta.env.BASE_URL
 	: `${import.meta.env.BASE_URL}/`;
+const htmlContent = post.contentHtml || "";
 ---
 
 <html
@@ -66,9 +54,22 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 					{post.department && <span>{post.department}</span>}
 				</div>
 				<h1>{post.title}</h1>
-				{post.summary && <p class="summary">{post.summary}</p>}
+				<div class="notice-actions">
+					{post.sourceUrl && <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer">查看原文</a>}
+				</div>
 
 				<div class="content html-content" set:html={htmlContent} />
+				{post.attachments && post.attachments.length > 0 && (
+					<section class="attachments" aria-label="附件">
+						<h2>附件</h2>
+						{post.attachments.map((attachment) => (
+							<a href={attachment.url || attachment.path} target="_blank" rel="noopener noreferrer">
+								<span>{attachment.name}</span>
+								{attachment.size && <small>{attachment.size}</small>}
+							</a>
+						))}
+					</section>
+				)}
 			</article>
 		</main>
 
@@ -208,10 +209,24 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 		margin: 12px 0 0;
 	}
 
-	.summary {
-		color: var(--muted);
-		border-bottom: 1px solid color-mix(in srgb, var(--line), transparent 30%);
-		padding-bottom: 16px;
+	.notice-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 16px;
+	}
+
+	.notice-actions a,
+	.attachments a {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		color: var(--accent-strong);
+		font-weight: 800;
+		text-decoration: none;
+		padding: 7px 11px;
 	}
 
 	.content {
@@ -265,6 +280,31 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 	.content :global(a) {
 		color: var(--accent-strong);
 		font-weight: 700;
+	}
+
+	.attachments {
+		display: grid;
+		gap: 10px;
+		margin-top: 28px;
+		border-top: 1px solid color-mix(in srgb, var(--line), transparent 30%);
+		padding-top: 18px;
+	}
+
+	.attachments h2 {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	.attachments a {
+		justify-content: space-between;
+		width: fit-content;
+		max-width: 100%;
+		border-radius: 8px;
+	}
+
+	.attachments small {
+		color: var(--muted);
+		font-size: 0.78rem;
 	}
 
 	@media (max-width: 720px) {

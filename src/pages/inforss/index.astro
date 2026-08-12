@@ -13,7 +13,7 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 	? import.meta.env.BASE_URL
 	: `${import.meta.env.BASE_URL}/`;
 
-const indexPath = join(process.cwd(), "InfoRSS", "index.json");
+const indexPath = join(process.cwd(), "data-generated", "inforss", "index.json");
 const indexRaw = existsSync(indexPath)
 	? readFileSync(indexPath, "utf-8")
 	: JSON.stringify({
@@ -68,12 +68,6 @@ function formatDateTime(value: string) {
 					<select id="searchScope" aria-label="搜索范围">
 						<option value="all">全部内容</option>
 						<option value="titleSummary">标题与摘要</option>
-					</select>
-					<select id="sourceFilter" aria-label="来源筛选">
-						<option value="all">全部来源</option>
-						{sourceFilters.map((source) => (
-							<option value={source.id}>{source.name}</option>
-						))}
 					</select>
 					<button class="clear-button" type="button" id="clearFilters">清空</button>
 					<button
@@ -188,7 +182,6 @@ function formatDateTime(value: string) {
 			const defaultTheme = root.dataset.defaultTheme || "system";
 			const searchInput = document.querySelector("#noticeSearchInput");
 			const searchScope = document.querySelector("#searchScope");
-			const sourceFilter = document.querySelector("#sourceFilter");
 			const dateFrom = document.querySelector("#dateFrom");
 			const dateTo = document.querySelector("#dateTo");
 			const clearFilters = document.querySelector("#clearFilters");
@@ -222,6 +215,19 @@ function formatDateTime(value: string) {
 				return new Date(`${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}T00:00:00`);
 			}
 
+			function dateKeyFromOffset(offsetDays) {
+				const date = new Date();
+				date.setDate(date.getDate() + offsetDays);
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, "0");
+				const day = String(date.getDate()).padStart(2, "0");
+				return `${year}${month}${day}`;
+			}
+
+			function defaultPreviewDates() {
+				return new Set([dateKeyFromOffset(0), dateKeyFromOffset(-1)]);
+			}
+
 			function dateMatches(postDateText) {
 				const hasStart = Boolean(dateFrom?.value);
 				const hasEnd = Boolean(dateTo?.value);
@@ -231,6 +237,13 @@ function formatDateTime(value: string) {
 				const start = hasStart ? new Date(`${dateFrom.value}T00:00:00`) : null;
 				const end = hasEnd ? new Date(`${dateTo.value}T23:59:59`) : null;
 				return (!start || postDate >= start) && (!end || postDate <= end);
+			}
+
+			function usesDefaultPreview(keywords) {
+				return keywords.length === 0
+					&& selectedCategory === "全部"
+					&& !dateFrom?.value
+					&& !dateTo?.value;
 			}
 
 			function escapeHtml(value) {
@@ -281,7 +294,8 @@ function formatDateTime(value: string) {
 				if (!searchInput || !emptyState) return;
 				const keywords = normalizeSearchText(searchInput.value).split(/\s+/).filter(Boolean);
 				const scope = searchScope?.value || "all";
-				const selectedSource = sourceFilter?.value || "all";
+				const defaultDates = defaultPreviewDates();
+				const useDefaultPreview = usesDefaultPreview(keywords);
 				const matchedPosts = [];
 
 				posts.forEach((post) => {
@@ -291,12 +305,13 @@ function formatDateTime(value: string) {
 					const displayText = scope === "titleSummary"
 						? post.dataset.titleSummaryText || ""
 						: post.dataset.fullText || "";
-					const sourceMatches = selectedSource === "all" || post.dataset.sourceId === selectedSource;
 					const categoryMatches = selectedCategory === "全部"
 						|| post.dataset.category === selectedCategory;
 					const searchMatches = keywords.length === 0 || keywords.every((keyword) => searchText.includes(keyword));
-					const timeMatches = dateMatches(post.dataset.date || "");
-					const matched = sourceMatches && categoryMatches && searchMatches && timeMatches;
+					const timeMatches = useDefaultPreview
+						? defaultDates.has(post.dataset.date || "")
+						: dateMatches(post.dataset.date || "");
+					const matched = categoryMatches && searchMatches && timeMatches;
 					if (matched) matchedPosts.push(post);
 					post.hidden = true;
 					updatePostText(post, keywords, displayText);
@@ -394,7 +409,6 @@ function formatDateTime(value: string) {
 
 			searchInput?.addEventListener("input", rerunFromFirstPage);
 			searchScope?.addEventListener("change", rerunFromFirstPage);
-			sourceFilter?.addEventListener("change", rerunFromFirstPage);
 			dateFrom?.addEventListener("change", rerunFromFirstPage);
 			dateTo?.addEventListener("change", rerunFromFirstPage);
 			categoryToggle?.addEventListener("click", () => {
@@ -408,7 +422,6 @@ function formatDateTime(value: string) {
 			clearFilters?.addEventListener("click", () => {
 				searchInput.value = "";
 				searchScope.value = "all";
-				sourceFilter.value = "all";
 				dateFrom.value = "";
 				dateTo.value = "";
 				selectedCategory = "全部";

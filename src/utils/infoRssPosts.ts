@@ -14,8 +14,10 @@ export interface InfoRssSource {
 }
 
 export interface InfoRssPost {
+	id?: string;
 	title: string;
 	date: string;
+	time?: string;
 	category: string;
 	summary: string;
 	department: string;
@@ -24,10 +26,23 @@ export interface InfoRssPost {
 	source: string;
 	xxid: string;
 	slug: string;
-	htmlPath: string;
+	htmlPath?: string;
 	preview: string;
 	titleSummaryText?: string;
 	searchText: string;
+	sourceUrl?: string;
+	contentHtml?: string;
+	contentText?: string;
+	attachments?: InfoRssAttachment[];
+	fetchedAt?: string;
+}
+
+export interface InfoRssAttachment {
+	id: string;
+	name: string;
+	url: string;
+	path: string;
+	size: string;
 }
 
 export interface InfoRssIndex {
@@ -47,7 +62,7 @@ export function parseInfoRssIndex(raw: string): InfoRssPost[] {
 
 export function parseInfoRssPayload(raw: string): InfoRssIndex {
 	const parsed = JSON.parse(raw) as InfoRssPost[] | Partial<InfoRssIndex>;
-	const posts = Array.isArray(parsed) ? parsed : parsed.posts || [];
+	const posts = (Array.isArray(parsed) ? parsed : parsed.posts || []).map(normalizePost);
 	const sortedPosts = posts.sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
 	const tags = Array.isArray(parsed) ? buildTags(sortedPosts) : parsed.tags || buildTags(sortedPosts);
 	const sources = Array.isArray(parsed)
@@ -67,7 +82,7 @@ export function parseInfoRssPayload(raw: string): InfoRssIndex {
 }
 
 export function infoRssPostSearchText(post: InfoRssPost) {
-	return `${post.title} ${post.date} ${post.category} ${post.department} ${displaySourceName(post.sourceId, post.sourceName)} ${post.searchText}`.toLowerCase();
+	return `${post.title} ${post.date} ${post.time || ""} ${post.category} ${post.department} ${displaySourceName(post.sourceId, post.sourceName)} ${post.searchText} ${post.contentText || ""}`.toLowerCase();
 }
 
 export function infoRssTitleSummarySearchText(post: InfoRssPost) {
@@ -115,4 +130,46 @@ function displaySourceName(id = "", name = "") {
 	if (id === "info_all" && (!name || name === id)) return "清华信息门户-全部";
 	if (name) return name;
 	return id;
+}
+
+function normalizePost(post: InfoRssPost): InfoRssPost {
+	return {
+		...post,
+		title: decodeInfoRssEntities(post.title),
+		summary: decodeInfoRssEntities(post.summary),
+		preview: decodeInfoRssEntities(post.preview),
+		titleSummaryText: decodeInfoRssEntities(post.titleSummaryText || ""),
+		searchText: decodeInfoRssEntities(post.searchText),
+		contentHtml: decodeInfoRssEntities(post.contentHtml || ""),
+		contentText: decodeInfoRssEntities(post.contentText || ""),
+		attachments: post.attachments?.map((attachment) => ({
+			...attachment,
+			name: decodeInfoRssEntities(attachment.name),
+		})),
+	};
+}
+
+export function decodeInfoRssEntities(value = "") {
+	let text = String(value || "");
+	for (let index = 0; index < 4; index += 1) {
+		const decoded = text
+			.replace(/&lt;/g, "<")
+			.replace(/&gt;/g, ">")
+			.replace(/&quot;/g, "\"")
+			.replace(/&#34;/g, "\"")
+			.replace(/&#39;/g, "'")
+			.replace(/&apos;/g, "'")
+			.replace(/&ldquo;/g, "\u201c")
+			.replace(/&rdquo;/g, "\u201d")
+			.replace(/&lsquo;/g, "\u2018")
+			.replace(/&rsquo;/g, "\u2019")
+			.replace(/&mdash;/g, "\u2014")
+			.replace(/&ndash;/g, "\u2013")
+			.replace(/&middot;/g, "\u00b7")
+			.replace(/&nbsp;/g, " ")
+			.replace(/&amp;/g, "&");
+		if (decoded === text) return decoded;
+		text = decoded;
+	}
+	return text;
 }

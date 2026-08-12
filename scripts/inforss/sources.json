@@ -1,0 +1,34 @@
+[
+  {
+    "id": "tsinghua-info-all",
+    "name": "清华信息门户",
+    "enabled": true,
+    "type": "tsinghua-info",
+    "listPageUrl": "https://info.tsinghua.edu.cn/f/info/xxfb_fg/xnzx/template/more?lmid=LM_BGTG",
+    "apiBaseUrl": "https://info.tsinghua.edu.cn",
+    "pages": 3,
+    "params": {
+      "oType": "mr",
+      "lmid": "all",
+      "lydw": "",
+      "length": 30,
+      "xxflid": ""
+    }
+  },
+  {
+    "id": "tsinghua-info-xs",
+    "name": "清华信息门户",
+    "enabled": true,
+    "type": "tsinghua-info",
+    "listPageUrl": "https://info.tsinghua.edu.cn/f/info/xxfb_fg/xnzx/template/more?lmid=LM_BGTG",
+    "apiBaseUrl": "https://info.tsinghua.edu.cn",
+    "pages": 3,
+    "params": {
+      "oType": "xs",
+      "lmid": "all",
+      "lydw": "",
+      "length": 30,
+      "xxflid": ""
+    }
+  }
+]

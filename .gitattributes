@@ -1,0 +1,4 @@
+data-generated/inforss/**/*.json text eol=lf
+*.mjs text eol=lf
+*.astro text eol=lf
+*.md text eol=lf
