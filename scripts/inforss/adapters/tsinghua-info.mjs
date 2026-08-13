@@ -127,7 +127,8 @@ async function fetchDetail(source, item, csrf, cookieJar) {
   const sourceUrl = getDetailSourceUrl(source, detail, item);
   const attachments = normalizeAttachments(source.apiBaseUrl, detail.fjs_template || []);
   const contentText = htmlToText(contentHtml);
-  const summary = makePreview(contentText || decodeHtml(item.nr_show || item.nr || ""));
+  const listSummary = htmlToText(decodeHtml(item.nr_show || item.nr || ""));
+  const summary = makePreview(listSummary);
 
   return {
     id: item.xxid,
