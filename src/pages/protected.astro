@@ -313,21 +313,20 @@ const shortcuts = settings.shortcuts;
 	}
 
 	.toolbar {
-		--control-height: 38px;
+		--control-height: 34px;
 		position: sticky;
 		top: 0;
 		z-index: 2;
 		display: grid;
-		align-items: end;
+		align-items: center;
 		grid-template-columns: auto minmax(260px, 1fr) auto;
 		gap: 12px;
 		margin-bottom: 18px;
-		padding: 12px;
-		border: 1px solid var(--line);
+		padding: 10px;
+		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
 		border-radius: 8px;
-		background:
-			linear-gradient(135deg, rgba(38, 127, 134, 0.08), transparent 42%),
-			color-mix(in srgb, var(--panel), transparent 7%);
+		background: color-mix(in srgb, var(--panel), transparent 1%);
+		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
 		backdrop-filter: blur(12px);
 	}
 

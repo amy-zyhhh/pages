@@ -72,23 +72,40 @@ export function parseMarkdownBlocks(body: string): BlogBlock[] {
 
 export function parseBlogHeadings(body: string): BlogHeading[] {
 	const used = new Map<string, number>();
+	const headings: BlogHeading[] = [];
+	let codeFence: string | null = null;
 
-	return body
-		.split(/\r?\n/)
-		.map((line) => line.match(/^(#{1,4})\s+(.+?)\s*#*$/))
-		.filter((match): match is RegExpMatchArray => Boolean(match))
-		.map((match) => {
-			const text = match[2].replace(/<[^>]+>/g, "").trim();
-			const baseId = slugifyHeading(text);
-			const count = used.get(baseId) ?? 0;
-			used.set(baseId, count + 1);
+	for (const rawLine of body.split(/\r?\n/)) {
+		const line = rawLine.trim();
+		const fence = line.match(/^(`{3,}|~{3,})/);
+		if (fence) {
+			if (codeFence && fence[1].startsWith(codeFence[0])) {
+				codeFence = null;
+			} else if (!codeFence) {
+				codeFence = fence[1];
+			}
+			continue;
+		}
+		if (codeFence) continue;
 
-			return {
-				depth: match[1].length,
-				id: count === 0 ? baseId : `${baseId}-${count}`,
-				text,
-			};
+		const match = rawLine.match(/^(#{1,4})\s+(.+?)\s*#*$/);
+		if (!match) continue;
+
+		const text = match[2].replace(/<[^>]+>/g, "").trim();
+		if (!text) continue;
+
+		const baseId = slugifyHeading(text);
+		const count = used.get(baseId) ?? 0;
+		used.set(baseId, count + 1);
+
+		headings.push({
+			depth: match[1].length,
+			id: count === 0 ? baseId : `${baseId}-${count}`,
+			text,
 		});
+	}
+
+	return headings;
 }
 
 function parseBlogPost(path: string, raw: string): BlogPost {

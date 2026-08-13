@@ -204,15 +204,19 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 	}
 
 	.topbar {
+		position: sticky;
+		top: 0;
+		z-index: 2;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 12px;
 		margin-bottom: 18px;
-		padding: 12px;
-		border: 1px solid var(--line);
+		padding: 10px;
+		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
 		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 7%);
+		background: color-mix(in srgb, var(--panel), transparent 1%);
+		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
 		backdrop-filter: blur(12px);
 	}
 
