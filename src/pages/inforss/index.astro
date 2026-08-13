@@ -61,12 +61,12 @@ function formatDateTime(value: string) {
 	</head>
 	<body>
 		<main class="shell app-shell">
-			<Topbar ariaLabel="InfoRSS navigation" backHref={basePath} brand="InfoRSS">
-				<button class="mobile-filter-toggle icon-button" id="mobileFilterToggle" type="button" aria-controls="filterPanel" aria-expanded="false" aria-label="展开搜索与筛选" slot="actions">
+			<Topbar ariaLabel="InfoRSS navigation" backHref={basePath} brand="InfoRSS" variant="archive">
+				<button class="mobile-filter-toggle app-icon-button" id="mobileFilterToggle" type="button" aria-controls="filterPanel" aria-expanded="false" aria-label="展开搜索与筛选" slot="actions">
 					⌕
 				</button>
 
-				<div class="filter-panel" id="filterPanel" slot="panel">
+				<div class="filter-panel app-topbar-panel app-topbar-panel-full" id="filterPanel" slot="panel">
 					<form class="notice-search topbar-search" role="search">
 						<label class="sr-only" for="noticeSearchInput">搜索</label>
 						<input id="noticeSearchInput" type="search" placeholder="搜索通知" autocomplete="off" />
@@ -75,9 +75,9 @@ function formatDateTime(value: string) {
 						<option value="all">全部内容</option>
 						<option value="titleSummary">标题与摘要</option>
 					</select>
-					<button class="clear-button pill-button" type="button" id="clearFilters">清空</button>
+					<button class="clear-button app-button" type="button" id="clearFilters">清空</button>
 					<button
-						class="category-toggle pill-button"
+						class="category-toggle app-button"
 						type="button"
 						id="categoryToggle"
 						aria-expanded="false"
@@ -518,9 +518,6 @@ function formatDateTime(value: string) {
 		--shell-width: 760px;
 	}
 
-	.filter-panel,
-	.custom-time,
-	.category-filter,
 	.status-row {
 		display: flex;
 		flex-wrap: wrap;
@@ -528,69 +525,6 @@ function formatDateTime(value: string) {
 		gap: 8px;
 	}
 
-	.mobile-filter-toggle {
-		display: none;
-		align-items: center;
-		justify-content: center;
-		width: 42px;
-		height: 34px;
-		border: 1px solid var(--line);
-		border-radius: 999px;
-		background: var(--card);
-		color: var(--accent-strong);
-		cursor: pointer;
-		padding: 0;
-		font: inherit;
-		font-size: 1.12rem;
-		font-weight: 800;
-		line-height: 1;
-	}
-
-	.filter-panel {
-		margin: 0;
-	}
-
-	.notice-search {
-		width: min(280px, 100%);
-	}
-
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-	}
-
-	input,
-	select,
-	.clear-button,
-	.category-toggle,
-	.page-button {
-		height: 34px;
-		border: 1px solid var(--line);
-		border-radius: 8px;
-		background: var(--card);
-		color: var(--text);
-		font: inherit;
-		padding: 7px 10px;
-	}
-
-	.notice-search input {
-		width: 100%;
-		outline: none;
-	}
-
-	input:focus,
-	select:focus {
-		border-color: var(--accent);
-		box-shadow: 0 0 0 4px rgba(38, 127, 134, 0.14);
-		outline: none;
-	}
-
-	.clear-button,
-	.category-toggle,
 	.page-button,
 	.category-filter-button {
 		cursor: pointer;
@@ -605,28 +539,6 @@ function formatDateTime(value: string) {
 	.custom-time {
 		color: var(--muted);
 		font-size: 0.86rem;
-	}
-
-	.category-filter {
-		margin: 0;
-	}
-
-	.category-filter-button {
-		display: inline-flex;
-		align-items: center;
-		min-height: 30px;
-		border: 1px solid var(--line);
-		border-radius: 999px;
-		background: var(--card);
-		color: var(--accent-strong);
-		font: inherit;
-		font-size: 0.84rem;
-		padding: 5px 10px;
-	}
-
-	.category-filter-button[aria-pressed="true"] {
-		border-color: var(--accent);
-		background: color-mix(in srgb, var(--accent), transparent 88%);
 	}
 
 	.status-row {
@@ -805,17 +717,8 @@ function formatDateTime(value: string) {
 	}
 
 	@media (max-width: 560px) {
-		.topbar-main {
-			flex-wrap: nowrap;
-		}
-
-		.topbar-main span {
-			margin-left: auto;
-		}
-
 		.mobile-filter-toggle {
 			display: flex;
-			margin-left: 8px;
 		}
 
 		.filter-panel {
@@ -826,14 +729,14 @@ function formatDateTime(value: string) {
 			display: flex;
 		}
 
-		.filter-panel,
 		.custom-time {
 			align-items: stretch;
 			flex-direction: column;
 			width: 100%;
 		}
 
-		.notice-search {
+		.notice-search,
+		.notice-search.topbar-search {
 			width: 100%;
 		}
 

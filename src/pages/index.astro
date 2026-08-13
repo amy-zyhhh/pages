@@ -55,18 +55,18 @@ const shortcuts = settings.shortcuts;
 	</head>
 	<body>
 		<main class="shell app-shell">
-			<Topbar ariaLabel="导航工具" title="我的导航">
+			<Topbar ariaLabel="导航工具" title="我的导航" variant="home">
 				<form class="search topbar-search" id="searchForm" role="search">
 					<label for="searchInput">搜索</label>
 					<input id="searchInput" type="search" placeholder="搜索导航，输入 /关键词 后回车搜索 Bing" autocomplete="off" />
 				</form>
 				<div class="actions" slot="actions">
-					<button class="mobile-search-toggle icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
+					<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
 					</button>
 					<label class="theme-control">
 						<span>主题</span>
-						<button class="theme-button icon-button" id="themeButton" type="button" aria-label="切换深浅色">
+						<button class="theme-button app-icon-button" id="themeButton" type="button" aria-label="切换深浅色">
 							<span class="theme-track" aria-hidden="true">
 								<span class="theme-thumb"></span>
 							</span>
@@ -381,137 +381,6 @@ const shortcuts = settings.shortcuts;
 		--shell-width: 1180px;
 	}
 
-	.search {
-		--control-height: 34px;
-		display: grid;
-		grid-template-rows: var(--control-height);
-	}
-
-	.search label,
-	.theme-control > span {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-	}
-
-	.search input {
-		width: 100%;
-		height: var(--control-height);
-		border: 1px solid var(--line);
-		border-radius: 8px;
-		background: var(--card);
-		color: var(--text);
-		padding: 10px 12px;
-		outline: none;
-		transition:
-			border-color 160ms ease,
-			box-shadow 160ms ease;
-	}
-
-	.search input:focus {
-		border-color: var(--accent);
-		box-shadow: 0 0 0 4px rgba(38, 127, 134, 0.14);
-	}
-
-	.actions {
-		display: flex;
-		align-items: end;
-		justify-content: end;
-		gap: 10px;
-	}
-
-	.theme-control {
-		display: grid;
-		grid-template-rows: var(--control-height);
-		justify-items: center;
-	}
-
-	.theme-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 52px;
-		height: var(--control-height);
-		border: 1px solid var(--line);
-		border-radius: 999px;
-		background: var(--card);
-		color: var(--muted);
-		cursor: pointer;
-		padding: 0;
-		transition:
-			background 160ms ease,
-			border-color 160ms ease,
-			color 160ms ease,
-			transform 160ms ease;
-	}
-
-	.mobile-search-toggle {
-		display: none;
-		align-items: center;
-		justify-content: center;
-		width: 52px;
-		height: var(--control-height);
-		border: 1px solid var(--line);
-		border-radius: 999px;
-		background: var(--card);
-		color: var(--accent-strong);
-		cursor: pointer;
-		padding: 0;
-		font: inherit;
-		font-size: 1.18rem;
-		font-weight: 800;
-		line-height: 1;
-		transition:
-			background 160ms ease,
-			border-color 160ms ease,
-			transform 160ms ease;
-	}
-
-	.mobile-search-toggle:hover {
-		transform: translateY(-1px);
-	}
-
-	.theme-button:hover {
-		transform: translateY(-1px);
-	}
-
-	.theme-button {
-		flex: 0 0 auto;
-		color: var(--accent-strong);
-		line-height: 1;
-	}
-
-	.theme-track {
-		position: relative;
-		display: block;
-		width: 34px;
-		height: 18px;
-		border-radius: 999px;
-		background: linear-gradient(90deg, #f0c86e, #7aa7b8);
-	}
-
-	.theme-thumb {
-		position: absolute;
-		display: block;
-		top: 3px;
-		left: 3px;
-		width: 12px;
-		height: 12px;
-		border-radius: 999px;
-		background: #fff8df;
-		transition:
-			background 160ms ease,
-			transform 160ms ease;
-	}
-
-	:root[data-theme="dark"] .theme-thumb {
-		background: #d9eef0;
-		transform: translateX(16px);
-	}
-
 	.sections {
 		display: grid;
 		gap: 22px;
@@ -560,7 +429,6 @@ const shortcuts = settings.shortcuts;
 
 	@media (max-width: 720px) {
 		.search {
-			--control-height: 36px;
 			display: none;
 			grid-column: 1 / -1;
 			order: 2;
@@ -570,24 +438,8 @@ const shortcuts = settings.shortcuts;
 			display: grid;
 		}
 
-		.actions {
-			align-items: center;
-			flex-direction: row;
-			grid-column: 2;
-			justify-content: end;
-		}
-
-		.search input {
-			padding: 8px 10px;
-		}
-
 		.mobile-search-toggle {
 			display: flex;
-			width: 48px;
-		}
-
-		.theme-button {
-			width: 48px;
 		}
 
 		.sections {

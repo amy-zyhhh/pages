@@ -5,6 +5,7 @@ interface Props {
 	backText?: string;
 	title?: string;
 	brand?: string;
+	variant?: "home" | "archive" | "reader";
 	class?: string;
 }
 
@@ -14,11 +15,12 @@ const {
 	backText = "返回",
 	title = "",
 	brand = "",
+	variant = "home",
 	class: className = "",
 } = Astro.props;
 ---
 
-<nav class:list={["app-topbar", className]} aria-label={ariaLabel}>
+<nav class:list={["app-topbar", `app-topbar-${variant}`, className]} aria-label={ariaLabel}>
 	<div class="app-topbar-row">
 		<div class="app-topbar-start">
 			{backHref && <a class="app-topbar-link" href={backHref}>{backText}</a>}

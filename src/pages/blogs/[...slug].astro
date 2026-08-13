@@ -64,9 +64,9 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 		<main class="shell app-shell">
 			<div class="reader">
 				<div class="article-column">
-					<Topbar ariaLabel="Blog navigation" backHref={`${basePath}blogs/`} brand="blogs">
+					<Topbar ariaLabel="Blog navigation" backHref={`${basePath}blogs/`} brand="blogs" variant="reader">
 						<span class="topbar-post-title" slot="start">{post.title}</span>
-						<button class="sidebar-toggle pill-button" id="sidebarToggle" type="button" aria-controls="blogSidebar" aria-pressed="false" slot="actions">
+						<button class="sidebar-toggle app-button" id="sidebarToggle" type="button" aria-controls="blogSidebar" aria-pressed="false" slot="actions">
 							目录
 						</button>
 					</Topbar>
@@ -451,27 +451,6 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 	:root[data-scrolled="true"] .app-topbar .topbar-post-title {
 		opacity: 1;
 		transform: translateY(0);
-	}
-
-	.sidebar-toggle {
-		height: 34px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 18%);
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--card), transparent 10%);
-		color: var(--accent-strong);
-		cursor: pointer;
-		padding: 0 14px;
-		font: inherit;
-		font-size: 0.86rem;
-		font-weight: 800;
-		transition:
-			border-color 0.16s ease,
-			background 0.16s ease,
-			transform 0.16s ease;
-	}
-
-	.sidebar-toggle:hover {
-		transform: translateY(-1px);
 	}
 
 	.reader {
