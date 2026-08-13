@@ -70,6 +70,9 @@ const shortcuts = settings.shortcuts;
 					<input id="searchInput" type="search" placeholder="搜索导航、blogs" autocomplete="off" />
 				</form>
 				<div class="actions">
+					<button class="mobile-search-toggle" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
+						⌕
+					</button>
 					<label class="theme-control">
 						<span>主题</span>
 						<button class="theme-button" id="themeButton" type="button" aria-label="切换深浅色">
@@ -131,7 +134,8 @@ const shortcuts = settings.shortcuts;
 			const normalSections = Array.from(document.querySelectorAll("[data-section]"));
 			const emptyState = document.querySelector("#emptyState");
 			const themeButton = document.querySelector("#themeButton");
-			if (!searchForm || !searchInput || !searchSection || !emptyState || !themeButton) {
+			const mobileSearchToggle = document.querySelector("#mobileSearchToggle");
+			if (!searchForm || !searchInput || !searchSection || !emptyState || !themeButton || !mobileSearchToggle) {
 				throw new Error("Protected navigation controls are incomplete.");
 			}
 			const searchCards = Array.from(searchSection.querySelectorAll("[data-card]"));
@@ -195,6 +199,12 @@ const shortcuts = settings.shortcuts;
 				event.preventDefault();
 			});
 			themeButton.addEventListener("click", toggleTheme);
+			mobileSearchToggle.addEventListener("click", () => {
+				const isOpen = root.dataset.mobileSearchOpen === "true";
+				root.dataset.mobileSearchOpen = String(!isOpen);
+				mobileSearchToggle.setAttribute("aria-expanded", String(!isOpen));
+				if (!isOpen) searchInput.focus();
+			});
 			window.addEventListener("keydown", (event) => {
 				const key = event.key;
 				const isTyping = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "");
@@ -399,8 +409,31 @@ const shortcuts = settings.shortcuts;
 			transform 160ms ease;
 	}
 
+	.mobile-search-toggle {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 52px;
+		height: var(--control-height);
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		background: var(--card);
+		color: var(--accent-strong);
+		cursor: pointer;
+		padding: 0;
+		font: inherit;
+		font-size: 1.18rem;
+		font-weight: 800;
+		line-height: 1;
+		transition:
+			background 160ms ease,
+			border-color 160ms ease,
+			transform 160ms ease;
+	}
+
 	.nav-button:hover,
-	.theme-button:hover {
+	.theme-button:hover,
+	.mobile-search-toggle:hover {
 		transform: translateY(-1px);
 	}
 
@@ -505,12 +538,23 @@ const shortcuts = settings.shortcuts;
 			gap: 10px;
 			margin-bottom: 14px;
 			padding: 10px;
-			position: static;
+			position: sticky;
+		}
+
+		.search {
+			display: none;
+			grid-column: 1 / -1;
+			order: 2;
+		}
+
+		:root[data-mobile-search-open="true"] .search {
+			display: grid;
 		}
 
 		.actions {
 			align-items: end;
 			flex-direction: row;
+			justify-content: end;
 		}
 
 		.search input {
@@ -518,8 +562,13 @@ const shortcuts = settings.shortcuts;
 		}
 
 		.nav-button,
-		.theme-button {
+		.theme-button,
+		.mobile-search-toggle {
 			width: 48px;
+		}
+
+		.mobile-search-toggle {
+			display: flex;
 		}
 
 		.sections {
@@ -530,16 +579,18 @@ const shortcuts = settings.shortcuts;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: 9px;
 		}
+
+		body {
+			background:
+				linear-gradient(135deg, rgba(38, 127, 134, 0.055) 0%, transparent 34%),
+				linear-gradient(315deg, rgba(185, 96, 59, 0.045) 0%, transparent 38%),
+				var(--bg);
+		}
 	}
 
 	@media (max-width: 430px) {
 		.toolbar {
-			grid-template-columns: auto minmax(0, 1fr);
-		}
-
-		.actions {
-			grid-column: 2;
-			justify-content: start;
+			grid-template-columns: auto minmax(0, 1fr) auto;
 		}
 	}
 

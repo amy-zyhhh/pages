@@ -74,6 +74,7 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 							</button>
 						</div>
 					</nav>
+					<button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="关闭目录"></button>
 
 					<article class="post" id="top" transition:name={`blog-post-${post.slug}`}>
 						<div class="post-meta">
@@ -173,6 +174,7 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 
 				const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 				const sidebarToggle = document.querySelector("#sidebarToggle");
+				const sidebarScrim = document.querySelector("#sidebarScrim");
 				const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
 				const headingIds = tocLinks
 					.map((link) => link.getAttribute("href") || "")
@@ -205,6 +207,14 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 				sidebarToggle.onclick = () => {
 					setSidebarHidden(root.dataset.sidebarHidden !== "true");
 				};
+				sidebarScrim?.addEventListener("click", () => setSidebarHidden(true));
+				tocLinks.forEach((link) => {
+					link.addEventListener("click", () => {
+						if (window.matchMedia("(max-width: 720px)").matches) {
+							setSidebarHidden(true);
+						}
+					});
+				});
 
 				function setActiveHeading() {
 					let activeId = headingIds[0];
@@ -544,6 +554,10 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 		visibility: hidden;
 	}
 
+	.sidebar-scrim {
+		display: none;
+	}
+
 	.article-column {
 		min-width: 0;
 		width: 100%;
@@ -869,8 +883,46 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 			top: 0;
 		}
 
+		.sidebar-scrim {
+			position: fixed;
+			inset: 0;
+			z-index: 6;
+			display: block;
+			border: 0;
+			background: rgba(29, 41, 40, 0.18);
+			opacity: 1;
+			padding: 0;
+			transition: opacity 0.18s ease;
+		}
+
+		:root[data-sidebar-hidden="true"] .sidebar-scrim {
+			opacity: 0;
+			pointer-events: none;
+		}
+
 		.sidebar {
-			position: static;
+			position: fixed;
+			right: 12px;
+			top: 62px;
+			z-index: 7;
+			max-width: min(300px, calc(100vw - 24px));
+			transform: translateX(0);
+		}
+
+		:root[data-sidebar-hidden="true"] .sidebar {
+			overflow: visible;
+			transform: translateX(calc(100% + 18px));
+			visibility: hidden;
+		}
+
+		.sidebar-panel {
+			width: min(300px, calc(100vw - 24px));
+			max-height: min(70vh, 520px);
+			border: 1px solid color-mix(in srgb, var(--line), transparent 20%);
+			border-radius: 8px;
+			background: color-mix(in srgb, var(--panel), transparent 2%);
+			box-shadow: 0 18px 48px rgba(29, 41, 40, 0.16);
+			padding: 14px;
 		}
 
 		.post {

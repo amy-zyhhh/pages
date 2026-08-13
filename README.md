@@ -1,12 +1,6 @@
 # Navigation Page
 
-这是一个基于 Astro 的个人导航与归档页面，用来集中管理常用入口、加密导航、个人博客和 InfoRSS 信息归档。
-
-线上地址：
-
-```text
-https://amy-zyhhh.github.io/pages/
-```
+这是一个基于 Astro 的个人导航、博客和信息归档项目。项目主要用于集中管理常用入口、加密导航、Markdown 博客，以及本地缓存的 InfoRSS 信息归档。
 
 ## 功能概览
 
@@ -15,9 +9,9 @@ https://amy-zyhhh.github.io/pages/
 - 加密页展示私有导航，并可同时搜索加密导航和 blogs。
 - blogs 支持根目录集中管理、子文件夹整理、分类入口、日期归档、全文检索和详情页目录。
 - Markdown 文章支持相对路径图片，也兼容常见 HTML 图片写法。
-- InfoRSS 支持从清华信息门户抓取列表与详情，形成长期本地归档。
+- InfoRSS 支持抓取列表与详情，形成长期本地归档。
 - InfoRSS 默认只展示今天和昨天的信息，但搜索、筛选和日期检索会覆盖全部归档内容。
-- 项目已配置 GitHub Actions，推送到 `main` 后会自动部署到 GitHub Pages。
+- 项目可构建为静态页面，适合部署到 GitHub Pages 等静态托管平台。
 
 ## 本地使用
 
@@ -96,12 +90,6 @@ src/data/protected-links.yaml
 
 ## 加密导航
 
-首页“其他”分类里的加密入口会提示输入口令，验证通过后进入：
-
-```text
-https://amy-zyhhh.github.io/pages/protected/
-```
-
 相关配置：
 
 ```text
@@ -165,9 +153,9 @@ summary: 一句话摘要，会显示在博客预览里。
 图片可以放在文章旁边的 `.assets` 文件夹中，例如：
 
 ```text
-blogs/学者/
-  Prof. Alexander Hartmaier.md
-  Prof. Alexander Hartmaier.assets/
+blogs/分类/
+  示例文章.md
+  示例文章.assets/
     01.png
 ```
 
@@ -175,7 +163,7 @@ HTML 图片目前主要读取整体缩放百分比，例如 `style="zoom:33%;"`�
 
 ## InfoRSS
 
-InfoRSS 用于把信息门户内容抓取到本地，生成可部署的静态归档。旧的独立 `InfoRSS` 页面已经被当前 Astro 页面替换。
+InfoRSS 用于把外部信息源内容抓取到本地，生成可部署的静态归档。
 
 抓取命令：
 
@@ -203,7 +191,11 @@ node scripts/inforss/fetch.mjs --from 20260810 --to 20260812
 npm.cmd run fetch:inforss:month
 ```
 
-按月补抓脚本会从当前月份开始，向前推进；每次运行只抓取一个月的信息，并把下一次要抓取的月份记录在 `scripts/inforss/month-state.json` 中。这个状态文件会随归档一起提交，确保无人值守任务每天都能继续向前补抓。
+按月补抓脚本会从当前月份开始，向前推进；每次运行只抓取一个月的信息，并把下一次要抓取的月份记录在：
+
+```text
+scripts/inforss/month-state.json
+```
 
 指定某个月份补抓：
 
@@ -217,12 +209,42 @@ node scripts/inforss/fetch-month.mjs --month 202608
 scripts/inforss/sources.json
 ```
 
+抓取源示例：
+
+```json
+{
+  "id": "source-example",
+  "name": "示例信息源",
+  "enabled": true,
+  "type": "tsinghua-info",
+  "listPageUrl": "https://example.com/list",
+  "apiBaseUrl": "https://example.com",
+  "pages": 3,
+  "backfillPages": 40,
+  "detailConcurrency": 6,
+  "params": {
+    "oType": "mr",
+    "lmid": "all",
+    "lydw": "",
+    "length": 30,
+    "xxflid": ""
+  }
+}
+```
+
+字段说明：
+
+- `pages`：日常抓取扫描的列表页数，建议保持较小。
+- `backfillPages`：按日期或按月补抓时扫描的列表页数，用于翻到更早内容。
+- `detailConcurrency`：详情页并发请求数量。
+- `params`：列表接口参数，不同栏目通常通过这里区分。
+
 抓取逻辑：
 
-- 先访问列表页，获取请求接口需要的 `XSRF-TOKEN`。
-- 再请求列表接口 `/b/info/xxfb_fg/xnzx/template/more`。
+- 先访问列表页，获取请求接口需要的令牌或 Cookie。
+- 再请求列表接口，得到文章列表。
 - 如果指定了日期范围，只处理范围内的列表项；列表翻到早于范围的日期后会提前停止。
-- 对新文章请求详情接口 `/b/info/xxfb_fg/xnzx/template/detail`。
+- 对新文章请求详情接口。
 - 只保存附件链接，不下载附件文件。
 - 正文、摘要、分类、来源、附件链接等内容缓存到本地。
 
@@ -245,35 +267,6 @@ data-generated/inforss/items/*.json
 - `/pages/inforss/` 默认只显示今天和昨天两天的信息。
 - 输入关键词、选择日期或使用分类筛选时，检索范围是全部归档内容。
 - 详情页显示本地缓存正文，并保留“查看原文”按钮。
-
-新增同类抓取源时，在 `sources.json` 里追加配置即可：
-
-```json
-{
-  "id": "tsinghua-info-example",
-  "name": "清华信息门户",
-  "enabled": true,
-  "type": "tsinghua-info",
-  "listPageUrl": "https://info.tsinghua.edu.cn/f/info/xxfb_fg/xnzx/template/more?lmid=LM_BGTG",
-  "apiBaseUrl": "https://info.tsinghua.edu.cn",
-  "pages": 3,
-  "detailConcurrency": 6,
-  "params": {
-    "oType": "xs",
-    "lmid": "all",
-    "lydw": "",
-    "length": 30,
-    "xxflid": ""
-  }
-}
-```
-
-如果后续信息量明显变大，优先考虑这些优化：
-
-- 给 InfoRSS 列表页增加分页或虚拟列表，避免一次渲染过多卡片。
-- 把全文搜索索引拆成独立 JSON，页面按需加载。
-- 为抓取结果增加失败日志页面，方便发现某个来源是否失效。
-- 给 `sources.json` 增加分组字段，便于同时管理多个站点或栏目。
 
 ## 搜索范围
 
@@ -298,31 +291,15 @@ src/data/settings.json
 
 如需更换搜索引擎，修改 `webSearch.url`，保留 `{query}` 作为关键词占位符。
 
-## 部署与归档流程
+## 自动归档
 
-手动更新 InfoRSS 并推送：
-
-```powershell
-npm.cmd run fetch:inforss
-npm.cmd run build
-git add data-generated scripts src package.json README.md
-git commit -m "Update InfoRSS archive"
-git push
-```
-
-每天在本地自动运行并推送：
+安装每日抓取计划任务：
 
 ```powershell
 npm.cmd run install:inforss-task
 ```
 
-默认会注册一个 Windows 计划任务：
-
-```text
-Pages InfoRSS Daily Update
-```
-
-计划任务每天 03:00 在本机运行：
+每日任务默认在本机 03:00 运行：
 
 ```powershell
 npm.cmd run daily:inforss
@@ -330,14 +307,13 @@ npm.cmd run daily:inforss
 
 每日任务会执行：
 
-1. 抓取 InfoRSS。
-   日常自动任务只抓取当天、昨天和前一天共三天的信息。
+1. 抓取当天、昨天和前一天共三天的信息。
 2. 构建 Astro 静态页面。
-3. 只暂存 `data-generated/inforss` 归档数据。
-4. 如果归档数据有变化，就提交并推送当前分支到 GitHub。
+3. 暂存 `data-generated/inforss` 归档数据。
+4. 如果归档数据有变化，就提交并推送当前分支。
 5. 如果没有新归档内容，就不提交。
 
-注意：日常任务不会自动提交 `src/`、`scripts/`、`README.md`、`package.json` 等代码和配置改动。页面代码、抓取配置、README 的修改仍然需要你手动提交，避免把未完成的代码一起推送。
+注意：每日任务不会自动提交 `src/`、`scripts/`、`README.md`、`package.json` 等代码和配置改动。页面代码、抓取配置、README 的修改仍然需要手动提交。
 
 安装按月补抓计划任务：
 
@@ -345,13 +321,7 @@ npm.cmd run daily:inforss
 npm.cmd run install:inforss-backfill-task
 ```
 
-默认会注册一个 Windows 计划任务：
-
-```text
-Pages InfoRSS Monthly Backfill
-```
-
-按月补抓任务每天 03:30 在本机运行：
+按月补抓任务默认在本机 03:30 运行：
 
 ```powershell
 npm.cmd run backfill:inforss:month
@@ -363,7 +333,7 @@ npm.cmd run backfill:inforss:month
 npm.cmd run uninstall:inforss-backfill-task
 ```
 
-修改计划任务时间：
+修改每日任务时间：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/install-daily-task.ps1 -Time "21:30"
@@ -375,10 +345,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/install-dail
 npm.cmd run daily:inforss
 ```
 
-查看每日任务日志：
+查看任务日志：
 
 ```text
 logs/inforss/
+```
+
+## 部署
+
+构建静态页面：
+
+```powershell
+npm.cmd run build
 ```
 
 GitHub Actions 配置：
@@ -393,16 +371,7 @@ Astro 部署配置：
 astro.config.mjs
 ```
 
-当前配置适用于仓库名为 `pages` 的 GitHub Pages：
-
-```js
-export default defineConfig({
-  site: "https://amy-zyhhh.github.io",
-  base: "/pages",
-});
-```
-
-如果以后复制到其他仓库，需要同步修改 `site` 和 `base`。如果仓库名是 `用户名.github.io`，通常不需要配置 `base`。
+如果部署到项目页，通常需要配置 `base`；如果部署到用户或组织主页，通常不需要配置 `base`。调整部署地址时，同步检查 `site` 和 `base`。
 
 ## 关键文件
 
@@ -421,13 +390,14 @@ src/utils/infoRssPosts.ts                   InfoRSS 解析和实体清理
 src/utils/searchItems.ts                    搜索项目转换
 src/utils/remarkLooseImages.mjs             博客图片兼容处理
 scripts/inforss/fetch.mjs                   InfoRSS 抓取入口
+scripts/inforss/fetch-month.mjs             InfoRSS 按月补抓入口
 scripts/inforss/sources.json                InfoRSS 抓取源配置
 scripts/inforss/adapters/                   InfoRSS 站点适配器
-scripts/inforss/daily-update.ps1            每日本地抓取、构建、提交和推送
-scripts/inforss/install-daily-task.ps1       安装 Windows 每日计划任务
+scripts/inforss/daily-update.ps1            本地抓取、构建、提交和推送
+scripts/inforss/install-daily-task.ps1      安装 Windows 每日计划任务
 scripts/inforss/install-monthly-backfill-task.ps1  安装 Windows 按月补抓计划任务
 scripts/inforss/uninstall-monthly-backfill-task.ps1  停止 Windows 按月补抓计划任务
-scripts/inforss/month-state.json             按月补抓进度
+scripts/inforss/month-state.json            按月补抓进度
 data-generated/inforss/                     InfoRSS 本地归档数据
 ```
 
@@ -437,3 +407,4 @@ data-generated/inforss/                     InfoRSS 本地归档数据
 - InfoRSS 归档数据建议一起提交到 GitHub，这样部署页面不依赖运行时抓取。
 - 新增内容类型时，先决定它应该进入哪个页面、哪个搜索框、是否参与全文索引，再写代码。
 - 对于长期归档，优先保持“旧内容不覆盖、重复链接跳过”的规则，避免误改历史记录。
+- 如果 InfoRSS 信息量继续增大，可以考虑分页、虚拟列表或独立搜索索引。

@@ -61,6 +61,13 @@ function formatDateTime(value: string) {
 			<nav class="topbar" aria-label="InfoRSS 导航">
 				<div class="topbar-main">
 					<a href={basePath}>返回</a>
+					<button class="mobile-filter-toggle" id="mobileFilterToggle" type="button" aria-controls="filterPanel" aria-expanded="false" aria-label="展开搜索和筛选">
+						⌕
+					</button>
+					<span>InfoRSS</span>
+				</div>
+
+				<div class="filter-panel" id="filterPanel">
 					<form class="notice-search" role="search">
 						<label class="sr-only" for="noticeSearchInput">搜索</label>
 						<input id="noticeSearchInput" type="search" placeholder="搜索通知" autocomplete="off" />
@@ -79,18 +86,17 @@ function formatDateTime(value: string) {
 					>
 						分类
 					</button>
-					<span>InfoRSS</span>
-				</div>
 
-				<div class="custom-time" id="customTime">
-					<label>
-						开始
-						<input id="dateFrom" type="date" />
-					</label>
-					<label>
-						结束
-						<input id="dateTo" type="date" />
-					</label>
+					<div class="custom-time" id="customTime">
+						<label>
+							开始
+							<input id="dateFrom" type="date" />
+						</label>
+						<label>
+							结束
+							<input id="dateTo" type="date" />
+						</label>
+					</div>
 				</div>
 
 				<div class="category-filter" id="categoryFilter" aria-label="通知分类筛选" hidden style="display: none;">
@@ -187,6 +193,7 @@ function formatDateTime(value: string) {
 			const clearFilters = document.querySelector("#clearFilters");
 			const categoryToggle = document.querySelector("#categoryToggle");
 			const categoryFilter = document.querySelector("#categoryFilter");
+			const mobileFilterToggle = document.querySelector("#mobileFilterToggle");
 			const pagination = document.querySelector("#pagination");
 			const posts = Array.from(document.querySelectorAll("[data-post]"));
 			const dateGroups = Array.from(document.querySelectorAll(".date-group"));
@@ -419,6 +426,12 @@ function formatDateTime(value: string) {
 					categoryFilter.style.display = isExpanded ? "none" : "";
 				}
 			});
+			mobileFilterToggle?.addEventListener("click", () => {
+				const isOpen = root.dataset.mobileFiltersOpen === "true";
+				root.dataset.mobileFiltersOpen = String(!isOpen);
+				mobileFilterToggle.setAttribute("aria-expanded", String(!isOpen));
+				if (!isOpen) searchInput?.focus();
+			});
 			clearFilters?.addEventListener("click", () => {
 				searchInput.value = "";
 				searchScope.value = "all";
@@ -522,6 +535,7 @@ function formatDateTime(value: string) {
 	}
 
 	.topbar-main,
+	.filter-panel,
 	.custom-time,
 	.category-filter,
 	.status-row {
@@ -542,6 +556,28 @@ function formatDateTime(value: string) {
 		color: var(--muted);
 		font-size: 0.86rem;
 		font-weight: 800;
+	}
+
+	.mobile-filter-toggle {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 42px;
+		height: 34px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		background: var(--card);
+		color: var(--accent-strong);
+		cursor: pointer;
+		padding: 0;
+		font: inherit;
+		font-size: 1.12rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
+	.filter-panel {
+		margin: 0;
 	}
 
 	.notice-search {
@@ -800,16 +836,48 @@ function formatDateTime(value: string) {
 
 	@media (max-width: 560px) {
 		.topbar-main {
-			align-items: stretch;
-			flex-direction: column;
+			flex-wrap: nowrap;
 		}
 
 		.topbar-main span {
-			margin-left: 0;
+			margin-left: auto;
+		}
+
+		.mobile-filter-toggle {
+			display: flex;
+		}
+
+		.filter-panel {
+			display: none;
+		}
+
+		:root[data-mobile-filters-open="true"] .filter-panel {
+			display: flex;
+		}
+
+		.filter-panel,
+		.custom-time {
+			align-items: stretch;
+			flex-direction: column;
+			width: 100%;
 		}
 
 		.notice-search {
 			width: 100%;
+		}
+
+		select,
+		.clear-button,
+		.category-toggle,
+		.custom-time input {
+			width: 100%;
+		}
+
+		body {
+			background:
+				linear-gradient(135deg, rgba(38, 127, 134, 0.055) 0%, transparent 34%),
+				linear-gradient(315deg, rgba(185, 96, 59, 0.045) 0%, transparent 38%),
+				var(--bg);
 		}
 	}
 

@@ -45,16 +45,23 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 		<main class="shell">
 			<nav class="topbar" aria-label="博客导航">
 				<a href={`${basePath}protected/`}>返回</a>
-				<form class="blog-search" role="search">
-					<label class="sr-only" for="blogSearchInput">搜索</label>
-					<input id="blogSearchInput" type="search" placeholder="搜索 blogs" autocomplete="off" />
-				</form>
-				<div class="category-nav" aria-label="博客分类">
-					{categories.map((category) => (
-						<a href={`${basePath}blogs/category/${encodeURIComponent(category)}/`}>{category}</a>
-					))}
+				<div class="topbar-actions">
+					<button class="mobile-search-toggle" id="mobileSearchToggle" type="button" aria-controls="blogTools" aria-expanded="false" aria-label="展开搜索">
+						⌕
+					</button>
+					<span>blogs</span>
 				</div>
-				<span>blogs</span>
+				<div class="blog-tools" id="blogTools">
+					<form class="blog-search" role="search">
+						<label class="sr-only" for="blogSearchInput">搜索</label>
+						<input id="blogSearchInput" type="search" placeholder="搜索 blogs" autocomplete="off" />
+					</form>
+					<div class="category-nav" aria-label="博客分类">
+						{categories.map((category) => (
+							<a href={`${basePath}blogs/category/${encodeURIComponent(category)}/`}>{category}</a>
+						))}
+					</div>
+				</div>
 			</nav>
 
 			<section class="blog-list" aria-label="按日期排列的博客">
@@ -115,6 +122,7 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 
 			function initBlogListPage() {
 				const searchInput = document.querySelector("#blogSearchInput");
+				const mobileSearchToggle = document.querySelector("#mobileSearchToggle");
 				const posts = Array.from(document.querySelectorAll("[data-post]"));
 				const dateGroups = Array.from(document.querySelectorAll(".date-group"));
 				const emptyState = document.querySelector("#emptyState");
@@ -139,6 +147,14 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 				}
 
 				searchInput.oninput = updatePosts;
+				if (mobileSearchToggle) {
+					mobileSearchToggle.onclick = () => {
+						const isOpen = document.documentElement.dataset.mobileSearchOpen === "true";
+						document.documentElement.dataset.mobileSearchOpen = String(!isOpen);
+						mobileSearchToggle.setAttribute("aria-expanded", String(!isOpen));
+						if (!isOpen) searchInput.focus();
+					};
+				}
 				updatePosts();
 			}
 
@@ -313,10 +329,10 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 		position: sticky;
 		top: 0;
 		z-index: 2;
-		display: flex;
+		display: grid;
 		align-items: center;
-		justify-content: space-between;
 		gap: 12px;
+		grid-template-columns: auto minmax(0, 1fr) auto;
 		margin-bottom: 18px;
 		padding: 12px;
 		border: 1px solid var(--line);
@@ -335,6 +351,42 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 		color: var(--muted);
 		font-size: 0.86rem;
 		font-weight: 800;
+	}
+
+	.topbar-actions {
+		display: flex;
+		align-items: center;
+		justify-content: end;
+		gap: 10px;
+		grid-column: 3;
+		grid-row: 1;
+	}
+
+	.mobile-search-toggle {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 42px;
+		height: 34px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		background: var(--card);
+		color: var(--accent-strong);
+		cursor: pointer;
+		padding: 0;
+		font: inherit;
+		font-size: 1.12rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
+	.blog-tools {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		grid-column: 2;
+		grid-row: 1;
+		min-width: 0;
 	}
 
 	.blog-search {
@@ -428,8 +480,23 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 
 	@media (max-width: 560px) {
 		.topbar {
-			align-items: flex-start;
-			flex-direction: column;
+			gap: 10px;
+		}
+
+		.mobile-search-toggle {
+			display: flex;
+		}
+
+		.blog-tools {
+			display: none;
+			grid-column: 1 / -1;
+			grid-row: auto;
+			order: 2;
+		}
+
+		:root[data-mobile-search-open="true"] .blog-tools {
+			display: grid;
+			gap: 10px;
 		}
 
 		.category-nav {
@@ -438,6 +505,13 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 
 		.blog-search {
 			width: 100%;
+		}
+
+		body {
+			background:
+				linear-gradient(135deg, rgba(38, 127, 134, 0.055) 0%, transparent 34%),
+				linear-gradient(315deg, rgba(185, 96, 59, 0.045) 0%, transparent 38%),
+				var(--bg);
 		}
 	}
 
