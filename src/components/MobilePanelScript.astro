@@ -1,0 +1,16 @@
+<script is:inline>
+	(() => {
+		if (window.initMobilePanelToggle) return;
+
+		window.initMobilePanelToggle = ({ button, root = document.documentElement, datasetKey, focusTarget }) => {
+			if (!button || !datasetKey) return;
+
+			button.addEventListener("click", () => {
+				const isOpen = root.dataset[datasetKey] === "true";
+				root.dataset[datasetKey] = String(!isOpen);
+				button.setAttribute("aria-expanded", String(!isOpen));
+				if (!isOpen) focusTarget?.focus();
+			});
+		};
+	})();
+</script>

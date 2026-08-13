@@ -1,8 +1,11 @@
 ---
 import LinkCard from "../components/LinkCard.astro";
+import MobilePanelScript from "../components/MobilePanelScript.astro";
 import ProtectedCard from "../components/ProtectedCard.astro";
+import Topbar from "../components/Topbar.astro";
 import linksYaml from "../data/links.yaml?raw";
 import settings from "../data/settings.json";
+import "../styles/shared.css";
 import { parseYamlLinks, type Link } from "../utils/parseLinks";
 import { linkToSearchCard, type SearchCardItem } from "../utils/searchItems";
 
@@ -51,27 +54,26 @@ const shortcuts = settings.shortcuts;
 		<title>我的导航</title>
 	</head>
 	<body>
-		<main class="shell">
-			<section class="toolbar" aria-label="筛选工具">
-				<span class="toolbar-title">我的导航</span>
-				<form class="search" id="searchForm" role="search">
+		<main class="shell app-shell">
+			<Topbar ariaLabel="导航工具" title="我的导航">
+				<form class="search topbar-search" id="searchForm" role="search">
 					<label for="searchInput">搜索</label>
 					<input id="searchInput" type="search" placeholder="搜索导航，输入 /关键词 后回车搜索 Bing" autocomplete="off" />
 				</form>
-				<div class="actions">
-					<button class="mobile-search-toggle" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
+				<div class="actions" slot="actions">
+					<button class="mobile-search-toggle icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
 					</button>
 					<label class="theme-control">
 						<span>主题</span>
-						<button class="theme-button" id="themeButton" type="button" aria-label="切换深浅色">
+						<button class="theme-button icon-button" id="themeButton" type="button" aria-label="切换深浅色">
 							<span class="theme-track" aria-hidden="true">
 								<span class="theme-thumb"></span>
 							</span>
 						</button>
 					</label>
 				</div>
-			</section>
+			</Topbar>
 
 			<div class="sections">
 				<section class="link-section search-results" data-search-section hidden>
@@ -107,6 +109,7 @@ const shortcuts = settings.shortcuts;
 
 			<p class="empty" id="emptyState" hidden>没有找到匹配的入口。</p>
 		</main>
+		<MobilePanelScript />
 
 		<script>
 			const root = document.documentElement;
@@ -267,11 +270,11 @@ const shortcuts = settings.shortcuts;
 				openWebSearch(query);
 			});
 			themeButton.addEventListener("click", toggleTheme);
-			mobileSearchToggle.addEventListener("click", () => {
-				const isOpen = root.dataset.mobileSearchOpen === "true";
-				root.dataset.mobileSearchOpen = String(!isOpen);
-				mobileSearchToggle.setAttribute("aria-expanded", String(!isOpen));
-				if (!isOpen) searchInput.focus();
+			window.initMobilePanelToggle?.({
+				button: mobileSearchToggle,
+				root,
+				datasetKey: "mobileSearchOpen",
+				focusTarget: searchInput,
 			});
 			protectedButton.addEventListener("click", openProtectedPage);
 			window.addEventListener("keydown", (event) => {
@@ -375,42 +378,11 @@ const shortcuts = settings.shortcuts;
 	}
 
 	.shell {
-		width: min(1180px, calc(100% - 32px));
-		margin: 0 auto;
-		padding: 24px 0 48px;
-	}
-
-	.toolbar {
-		--control-height: 34px;
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		display: grid;
-		align-items: center;
-		grid-template-columns: minmax(260px, 1fr) auto;
-		gap: 12px;
-		margin-bottom: 18px;
-		padding: 10px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 1%);
-		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
-		backdrop-filter: blur(12px);
-	}
-
-	.toolbar-title {
-		display: none;
-		min-width: 0;
-		color: var(--text);
-		font-size: 1rem;
-		font-weight: 800;
-		line-height: 1.2;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		--shell-width: 1180px;
 	}
 
 	.search {
+		--control-height: 34px;
 		display: grid;
 		grid-template-rows: var(--control-height);
 	}
@@ -586,36 +558,12 @@ const shortcuts = settings.shortcuts;
 		text-align: center;
 	}
 
-	@media (max-width: 820px) {
-		.toolbar {
-			grid-template-columns: 1fr;
-		}
-	}
-
 	@media (max-width: 720px) {
-		.shell {
-			width: min(100% - 24px, 1180px);
-			padding-top: 12px;
-		}
-
-		.toolbar {
-			--control-height: 36px;
-			grid-template-columns: minmax(0, 1fr) auto;
-			align-items: center;
-			gap: 10px;
-			margin-bottom: 14px;
-			padding: 10px;
-			position: sticky;
-		}
-
 		.search {
+			--control-height: 36px;
 			display: none;
 			grid-column: 1 / -1;
 			order: 2;
-		}
-
-		.toolbar-title {
-			display: block;
 		}
 
 		:root[data-mobile-search-open="true"] .search {
@@ -660,10 +608,6 @@ const shortcuts = settings.shortcuts;
 	}
 
 	@media (max-width: 359px) {
-		.toolbar {
-			grid-template-columns: 1fr;
-		}
-
 		.actions {
 			justify-content: start;
 		}

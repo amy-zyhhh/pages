@@ -1,0 +1,48 @@
+---
+interface MetaItem {
+	text: string;
+}
+
+interface Props {
+	href: string;
+	title: string;
+	summary?: string;
+	meta?: MetaItem[];
+	searchText?: string;
+	transitionName?: string;
+	headingLevel?: 1 | 2 | 3;
+	class?: string;
+	attributes?: Record<string, string | undefined>;
+}
+
+const {
+	href,
+	title,
+	summary = "",
+	meta = [],
+	searchText = "",
+	transitionName,
+	headingLevel = 1,
+	class: className = "",
+	attributes = {},
+} = Astro.props;
+const Heading = `h${headingLevel}` as "h1" | "h2" | "h3";
+---
+
+<article
+	class:list={["article-preview", className]}
+	data-card={searchText ? true : undefined}
+	data-search={searchText || undefined}
+	transition:name={transitionName}
+	{...attributes}
+>
+	<a class="article-preview-link" href={href}>
+		{meta.length > 0 && (
+			<div class="article-preview-meta">
+				{meta.map((item) => <span>{item.text}</span>)}
+			</div>
+		)}
+		<Heading data-title>{title}</Heading>
+		{summary && <p class="article-preview-summary" data-preview-text>{summary}</p>}
+	</a>
+</article>

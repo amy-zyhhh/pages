@@ -1,10 +1,13 @@
 ---
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import ArticlePreviewCard from "../../components/ArticlePreviewCard.astro";
+import MobilePanelScript from "../../components/MobilePanelScript.astro";
+import Topbar from "../../components/Topbar.astro";
 import settings from "../../data/settings.json";
+import "../../styles/shared.css";
 import {
 	infoRssPostSearchText,
-	infoRssPreviewText,
 	infoRssTitleSummarySearchText,
 	parseInfoRssPayload,
 } from "../../utils/infoRssPosts";
@@ -57,18 +60,14 @@ function formatDateTime(value: string) {
 		<title>InfoRSS 通知</title>
 	</head>
 	<body>
-		<main class="shell">
-			<nav class="topbar" aria-label="InfoRSS 导航">
-				<div class="topbar-main">
-					<a href={basePath}>返回</a>
-					<button class="mobile-filter-toggle" id="mobileFilterToggle" type="button" aria-controls="filterPanel" aria-expanded="false" aria-label="展开搜索和筛选">
-						⌕
-					</button>
-					<span>InfoRSS</span>
-				</div>
+		<main class="shell app-shell">
+			<Topbar ariaLabel="InfoRSS navigation" backHref={basePath} brand="InfoRSS">
+				<button class="mobile-filter-toggle icon-button" id="mobileFilterToggle" type="button" aria-controls="filterPanel" aria-expanded="false" aria-label="展开搜索与筛选" slot="actions">
+					⌕
+				</button>
 
-				<div class="filter-panel" id="filterPanel">
-					<form class="notice-search" role="search">
+				<div class="filter-panel" id="filterPanel" slot="panel">
+					<form class="notice-search topbar-search" role="search">
 						<label class="sr-only" for="noticeSearchInput">搜索</label>
 						<input id="noticeSearchInput" type="search" placeholder="搜索通知" autocomplete="off" />
 					</form>
@@ -76,9 +75,9 @@ function formatDateTime(value: string) {
 						<option value="all">全部内容</option>
 						<option value="titleSummary">标题与摘要</option>
 					</select>
-					<button class="clear-button" type="button" id="clearFilters">清空</button>
+					<button class="clear-button pill-button" type="button" id="clearFilters">清空</button>
 					<button
-						class="category-toggle"
+						class="category-toggle pill-button"
 						type="button"
 						id="categoryToggle"
 						aria-expanded="false"
@@ -97,21 +96,21 @@ function formatDateTime(value: string) {
 							<input id="dateTo" type="date" />
 						</label>
 					</div>
-				</div>
 
-				<div class="category-filter" id="categoryFilter" aria-label="通知分类筛选" hidden style="display: none;">
-					{categoryFilters.map((category, index) => (
-						<button
-							type="button"
-							class="category-filter-button"
-							data-category-filter={category}
-							aria-pressed={index === 0 ? "true" : "false"}
-						>
-							{category}
-						</button>
-					))}
+					<div class="category-filter" id="categoryFilter" aria-label="通知分类筛选" hidden style="display: none;">
+						{categoryFilters.map((category, index) => (
+							<button
+								type="button"
+								class="category-filter-button"
+								data-category-filter={category}
+								aria-pressed={index === 0 ? "true" : "false"}
+							>
+								{category}
+							</button>
+						))}
+					</div>
 				</div>
-			</nav>
+			</Topbar>
 
 			<section class="status-row" aria-label="InfoRSS 状态">
 				<span>最近更新：{formatDateTime(payload.lastScrapeAt || payload.generatedAt)}</span>
@@ -146,33 +145,33 @@ function formatDateTime(value: string) {
 							<time datetime={group.date}>{group.date}</time>
 						</div>
 						{group.posts.map((post) => {
-							const preview = infoRssPreviewText(post);
+							const preview = post.summary;
 							return (
-								<article
+								<ArticlePreviewCard
 									class="notice"
-									data-post
-									data-date={post.date}
-									data-category={post.category}
-									data-department={post.department}
-									data-source-id={post.sourceId || "info_all"}
-									data-source-name={post.sourceName || ""}
-									data-full-search={infoRssPostSearchText(post)}
-									data-title-summary-search={infoRssTitleSummarySearchText(post)}
-									data-full-text={`${post.title} ${post.date} ${post.category} ${post.department} ${post.sourceName || ""} ${post.searchText}`}
-									data-title-summary-text={`${post.title} ${post.summary} ${post.preview} ${post.titleSummaryText || ""}`}
-									data-title-text={post.title}
-									data-preview={preview}
-								>
-									<a class="notice-link" href={`${basePath}inforss/${post.slug}/`}>
-										<div class="notice-meta">
-											<span>{post.category}</span>
-											{post.department && <span>{post.department}</span>}
-											{sourceFilters.length > 1 && post.sourceName && <span>{post.sourceName}</span>}
-										</div>
-										<h1 data-title>{post.title}</h1>
-										<p data-preview-text>{preview}</p>
-									</a>
-								</article>
+									href={`${basePath}inforss/${post.slug}/`}
+									title={post.title}
+									summary={preview}
+									meta={[
+										{ text: post.category },
+										...(post.department ? [{ text: post.department }] : []),
+										...(sourceFilters.length > 1 && post.sourceName ? [{ text: post.sourceName }] : []),
+									]}
+									attributes={{
+										"data-post": "",
+										"data-date": post.date,
+										"data-category": post.category,
+										"data-department": post.department,
+										"data-source-id": post.sourceId || "info_all",
+										"data-source-name": post.sourceName || "",
+										"data-full-search": infoRssPostSearchText(post),
+										"data-title-summary-search": infoRssTitleSummarySearchText(post),
+										"data-full-text": `${post.title} ${post.date} ${post.category} ${post.department} ${post.sourceName || ""} ${post.searchText}`,
+										"data-title-summary-text": `${post.title} ${post.summary} ${post.preview} ${post.titleSummaryText || ""}`,
+										"data-title-text": post.title,
+										"data-preview": preview,
+									}}
+								/>
 							);
 						})}
 					</div>
@@ -181,6 +180,7 @@ function formatDateTime(value: string) {
 			<p class="empty" id="emptyState" hidden>没有找到匹配的通知。</p>
 			<nav class="pagination" id="pagination" aria-label="通知分页"></nav>
 		</main>
+		<MobilePanelScript />
 
 		<script>
 			const root = document.documentElement;
@@ -426,11 +426,11 @@ function formatDateTime(value: string) {
 					categoryFilter.style.display = isExpanded ? "none" : "";
 				}
 			});
-			mobileFilterToggle?.addEventListener("click", () => {
-				const isOpen = root.dataset.mobileFiltersOpen === "true";
-				root.dataset.mobileFiltersOpen = String(!isOpen);
-				mobileFilterToggle.setAttribute("aria-expanded", String(!isOpen));
-				if (!isOpen) searchInput?.focus();
+			window.initMobilePanelToggle?.({
+				button: mobileFilterToggle,
+				root,
+				datasetKey: "mobileFiltersOpen",
+				focusTarget: searchInput,
 			});
 			clearFilters?.addEventListener("click", () => {
 				searchInput.value = "";
@@ -515,27 +515,9 @@ function formatDateTime(value: string) {
 	}
 
 	.shell {
-		width: min(760px, calc(100% - 32px));
-		margin: 0 auto;
-		padding: 24px 0 48px;
+		--shell-width: 760px;
 	}
 
-	.topbar {
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		display: grid;
-		gap: 10px;
-		margin-bottom: 14px;
-		padding: 10px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 1%);
-		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
-		backdrop-filter: blur(12px);
-	}
-
-	.topbar-main,
 	.filter-panel,
 	.custom-time,
 	.category-filter,
@@ -546,23 +528,7 @@ function formatDateTime(value: string) {
 		gap: 8px;
 	}
 
-	.topbar-main a {
-		order: 0;
-		color: var(--accent-strong);
-		font-weight: 800;
-		text-decoration: none;
-	}
-
-	.topbar-main span {
-		order: 1;
-		margin-left: auto;
-		color: var(--muted);
-		font-size: 0.86rem;
-		font-weight: 800;
-	}
-
 	.mobile-filter-toggle {
-		order: 2;
 		display: none;
 		align-items: center;
 		justify-content: center;

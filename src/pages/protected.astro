@@ -1,11 +1,14 @@
 ---
-import BlogPreviewCard from "../components/BlogPreviewCard.astro";
+import ArticlePreviewCard from "../components/ArticlePreviewCard.astro";
+import MobilePanelScript from "../components/MobilePanelScript.astro";
+import Topbar from "../components/Topbar.astro";
 import LinkCard from "../components/LinkCard.astro";
 import protectedLinksYaml from "../data/protected-links.yaml?raw";
 import settings from "../data/settings.json";
 import { parseBlogPosts } from "../utils/blogPosts";
 import { parseYamlLinks, type Link } from "../utils/parseLinks";
-import { linkToSearchCard, type SearchCardItem } from "../utils/searchItems";
+import { blogPostSearchText, linkToSearchCard, type SearchCardItem } from "../utils/searchItems";
+import "../styles/shared.css";
 
 const basePath = import.meta.env.BASE_URL.endsWith("/")
 	? import.meta.env.BASE_URL
@@ -59,31 +62,26 @@ const shortcuts = settings.shortcuts;
 		<title>我的导航</title>
 	</head>
 	<body>
-		<main class="shell">
-			<section class="toolbar" aria-label="筛选工具">
-				<label class="protected-control">
-					<span>返回</span>
-					<a class="nav-button" href={basePath} aria-label="返回普通导航">←</a>
-				</label>
-				<span class="toolbar-title">加密导航</span>
-				<form class="search" id="searchForm" role="search">
-					<label for="searchInput">搜索</label>
+		<main class="shell app-shell">
+			<Topbar ariaLabel="导航工具" backHref={basePath} backText="返回" title="我的导航">
+				<form class="search topbar-search" id="searchForm" role="search">
+					<label class="sr-only" for="searchInput">搜索</label>
 					<input id="searchInput" type="search" placeholder="搜索导航、blogs" autocomplete="off" />
 				</form>
-				<div class="actions">
-					<button class="mobile-search-toggle" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
+				<div class="actions" slot="actions">
+					<button class="mobile-search-toggle icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
 					</button>
 					<label class="theme-control">
 						<span>主题</span>
-						<button class="theme-button" id="themeButton" type="button" aria-label="切换深浅色">
+						<button class="theme-button icon-button" id="themeButton" type="button" aria-label="切换深浅色">
 							<span class="theme-track" aria-hidden="true">
 								<span class="theme-thumb"></span>
 							</span>
 						</button>
 					</label>
 				</div>
-			</section>
+			</Topbar>
 
 			<div class="sections">
 				<section class="link-section search-results" data-search-section hidden>
@@ -94,7 +92,16 @@ const shortcuts = settings.shortcuts;
 						</div>
 					</div>
 					<div class="search-group blog-result-group" data-search-group>
-						{protectedSearchBlogPosts.map((post) => <BlogPreviewCard post={post} basePath={basePath} />)}
+						{protectedSearchBlogPosts.map((post) => (
+							<ArticlePreviewCard
+								href={`${basePath}blogs/${post.slug}/`}
+								title={post.title}
+								summary={post.summary}
+								meta={[{ text: post.date }, { text: post.category }]}
+								searchText={blogPostSearchText(post)}
+								headingLevel={3}
+							/>
+						))}
 					</div>
 				</section>
 
@@ -113,6 +120,7 @@ const shortcuts = settings.shortcuts;
 			<p class="empty" id="emptyState" hidden>没有找到匹配的入口。</p>
 			{sortedLinks.length === 0 && <p class="empty">暂无加密入口。</p>}
 		</main>
+		<MobilePanelScript />
 
 		<script>
 			const root = document.documentElement;
@@ -200,11 +208,11 @@ const shortcuts = settings.shortcuts;
 				event.preventDefault();
 			});
 			themeButton.addEventListener("click", toggleTheme);
-			mobileSearchToggle.addEventListener("click", () => {
-				const isOpen = root.dataset.mobileSearchOpen === "true";
-				root.dataset.mobileSearchOpen = String(!isOpen);
-				mobileSearchToggle.setAttribute("aria-expanded", String(!isOpen));
-				if (!isOpen) searchInput.focus();
+			window.initMobilePanelToggle?.({
+				button: mobileSearchToggle,
+				root,
+				datasetKey: "mobileSearchOpen",
+				focusTarget: searchInput,
 			});
 			window.addEventListener("keydown", (event) => {
 				const key = event.key;
@@ -307,42 +315,11 @@ const shortcuts = settings.shortcuts;
 	}
 
 	.shell {
-		width: min(1180px, calc(100% - 32px));
-		margin: 0 auto;
-		padding: 24px 0 48px;
-	}
-
-	.toolbar {
-		--control-height: 34px;
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		display: grid;
-		align-items: center;
-		grid-template-columns: auto minmax(260px, 1fr) auto;
-		gap: 12px;
-		margin-bottom: 18px;
-		padding: 10px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 1%);
-		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
-		backdrop-filter: blur(12px);
-	}
-
-	.toolbar-title {
-		display: none;
-		min-width: 0;
-		color: var(--text);
-		font-size: 1rem;
-		font-weight: 800;
-		line-height: 1.2;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		--shell-width: 1180px;
 	}
 
 	.search {
+		--control-height: 34px;
 		display: grid;
 		grid-template-rows: var(--control-height);
 	}
@@ -523,36 +500,12 @@ const shortcuts = settings.shortcuts;
 		text-align: center;
 	}
 
-	@media (max-width: 820px) {
-		.toolbar {
-			grid-template-columns: 1fr;
-		}
-	}
-
 	@media (max-width: 720px) {
-		.shell {
-			width: min(100% - 24px, 1180px);
-			padding-top: 12px;
-		}
-
-		.toolbar {
-			--control-height: 36px;
-			grid-template-columns: auto minmax(0, 1fr) auto;
-			align-items: center;
-			gap: 10px;
-			margin-bottom: 14px;
-			padding: 10px;
-			position: sticky;
-		}
-
 		.search {
+			--control-height: 36px;
 			display: none;
 			grid-column: 1 / -1;
 			order: 2;
-		}
-
-		.toolbar-title {
-			display: block;
 		}
 
 		:root[data-mobile-search-open="true"] .search {
@@ -593,12 +546,6 @@ const shortcuts = settings.shortcuts;
 				linear-gradient(135deg, rgba(38, 127, 134, 0.055) 0%, transparent 34%),
 				linear-gradient(315deg, rgba(185, 96, 59, 0.045) 0%, transparent 38%),
 				var(--bg);
-		}
-	}
-
-	@media (max-width: 430px) {
-		.toolbar {
-			grid-template-columns: auto minmax(0, 1fr) auto;
 		}
 	}
 

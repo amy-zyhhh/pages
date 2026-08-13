@@ -1,0 +1,37 @@
+---
+interface Props {
+	ariaLabel: string;
+	backHref?: string;
+	backText?: string;
+	title?: string;
+	brand?: string;
+	class?: string;
+}
+
+const {
+	ariaLabel,
+	backHref,
+	backText = "返回",
+	title = "",
+	brand = "",
+	class: className = "",
+} = Astro.props;
+---
+
+<nav class:list={["app-topbar", className]} aria-label={ariaLabel}>
+	<div class="app-topbar-row">
+		<div class="app-topbar-start">
+			{backHref && <a class="app-topbar-link" href={backHref}>{backText}</a>}
+			{title && <span class="app-topbar-title">{title}</span>}
+			<slot name="start" />
+		</div>
+		<div class="app-topbar-center">
+			<slot />
+		</div>
+		<div class="app-topbar-actions">
+			{brand && <span class="app-topbar-brand">{brand}</span>}
+			<slot name="actions" />
+		</div>
+	</div>
+	<slot name="panel" />
+</nav>

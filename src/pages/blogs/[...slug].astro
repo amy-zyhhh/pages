@@ -1,7 +1,9 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import Topbar from "../../components/Topbar.astro";
 import settings from "../../data/settings.json";
 import { parseBlogHeadings, parseBlogPosts, type BlogPost } from "../../utils/blogPosts";
+import "../../styles/shared.css";
 
 type MarkdownModule = {
 	Content: unknown;
@@ -59,21 +61,15 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 		<ClientRouter />
 	</head>
 	<body>
-		<main class="shell">
+		<main class="shell app-shell">
 			<div class="reader">
 				<div class="article-column">
-					<nav class="topbar" aria-label="博客导航">
-						<div class="topbar-title">
-							<a href={`${basePath}blogs/`}>返回</a>
-							<span class="topbar-post-title">{post.title}</span>
-						</div>
-						<div class="topbar-actions">
-							<span>blogs</span>
-							<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-controls="blogSidebar" aria-pressed="false">
-								目录
-							</button>
-						</div>
-					</nav>
+					<Topbar ariaLabel="Blog navigation" backHref={`${basePath}blogs/`} brand="blogs">
+						<span class="topbar-post-title" slot="start">{post.title}</span>
+						<button class="sidebar-toggle pill-button" id="sidebarToggle" type="button" aria-controls="blogSidebar" aria-pressed="false" slot="actions">
+							目录
+						</button>
+					</Topbar>
 					<button class="sidebar-scrim" id="sidebarScrim" type="button" aria-label="关闭目录"></button>
 
 					<article class="post" id="top" transition:name={`blog-post-${post.slug}`}>
@@ -306,7 +302,7 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 				}
 
 				function positionButtons() {
-					const topbar = document.querySelector(".topbar");
+					const topbar = document.querySelector(".app-topbar");
 					const stickyTop = Math.max(58, (topbar?.getBoundingClientRect().height || 0) + 10);
 
 					buttons.forEach((button) => {
@@ -421,61 +417,23 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 	}
 
 	.shell {
-		width: min(1080px, calc(100% - 32px));
-		margin: 0 auto;
-		padding: 24px 0 48px;
+		--shell-width: 1080px;
 	}
 
-	.topbar {
-		position: sticky;
-		top: 0;
-		z-index: 5;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 20px;
-		padding: 8px 10px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 1%);
-		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
-		backdrop-filter: blur(12px);
-	}
-
-	.topbar a {
-		display: inline-flex;
-		align-items: center;
-		min-height: 34px;
-		flex: none;
-		color: var(--accent-strong);
-		font-weight: 800;
-		text-decoration: none;
-	}
-
-	.topbar-title {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		min-width: 0;
-	}
-
-	.topbar-title::before {
+	.app-topbar-start::after {
 		width: 1px;
 		height: 20px;
-		order: 2;
 		background: color-mix(in srgb, var(--line), transparent 12%);
 		content: "";
 		opacity: 0;
 		transition: opacity 0.16s ease;
 	}
 
-	:root[data-scrolled="true"] .topbar-title::before {
+	:root[data-scrolled="true"] .app-topbar-start::after {
 		opacity: 1;
 	}
 
-	.topbar .topbar-post-title {
-		order: 3;
+	.app-topbar .topbar-post-title {
 		overflow: hidden;
 		color: var(--text);
 		font-size: 1.05rem;
@@ -490,21 +448,9 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 		white-space: nowrap;
 	}
 
-	:root[data-scrolled="true"] .topbar .topbar-post-title {
+	:root[data-scrolled="true"] .app-topbar .topbar-post-title {
 		opacity: 1;
 		transform: translateY(0);
-	}
-
-	.topbar span {
-		color: var(--muted);
-		font-size: 0.86rem;
-		font-weight: 800;
-	}
-
-	.topbar-actions {
-		display: flex;
-		align-items: center;
-		gap: 10px;
 	}
 
 	.sidebar-toggle {

@@ -384,7 +384,9 @@ src/pages/blogs/category/[category].astro   博客分类页
 src/pages/inforss/index.astro               InfoRSS 列表页
 src/pages/inforss/[...slug].astro           InfoRSS 详情页
 src/components/LinkCard.astro               导航卡片
-src/components/BlogPreviewCard.astro        博客预览卡片
+src/components/ArticlePreviewCard.astro     blogs 和 InfoRSS 共用预览卡片
+src/components/Topbar.astro                 统一顶栏壳层
+src/components/MobilePanelScript.astro      移动端搜索/筛选展开逻辑
 src/utils/blogPosts.ts                      博客解析和全文索引
 src/utils/infoRssPosts.ts                   InfoRSS 解析和实体清理
 src/utils/searchItems.ts                    搜索项目转换

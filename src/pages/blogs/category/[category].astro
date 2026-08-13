@@ -1,7 +1,10 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import ArticlePreviewCard from "../../../components/ArticlePreviewCard.astro";
+import Topbar from "../../../components/Topbar.astro";
 import settings from "../../../data/settings.json";
 import { parseBlogPosts, type BlogPost } from "../../../utils/blogPosts";
+import "../../../styles/shared.css";
 
 export function getStaticPaths() {
 	const modules = import.meta.glob("../../../../blogs/**/*.md", {
@@ -45,23 +48,19 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 		<ClientRouter />
 	</head>
 	<body>
-		<main class="shell">
-			<nav class="topbar" aria-label="博客导航">
-				<a href={`${basePath}blogs/`}>返回</a>
-				<span>{category}</span>
-			</nav>
+		<main class="shell app-shell">
+			<Topbar ariaLabel="博客分类导航" backHref={`${basePath}blogs/`} title={category} brand="blogs" />
 
 			<section class="blog-list" aria-label={`${category} 分类文章`}>
 				{posts.map((post) => (
-					<article class="post" id={post.slug} transition:name={`blog-post-${post.slug}`}>
-						<a class="post-link" href={`${basePath}blogs/${post.slug}/`}>
-							<div class="post-meta">
-								<time datetime={post.date}>{post.date}</time>
-							</div>
-							<h1>{post.title}</h1>
-							{post.summary && <p class="summary">{post.summary}</p>}
-						</a>
-					</article>
+					<ArticlePreviewCard
+						href={`${basePath}blogs/${post.slug}/`}
+						title={post.title}
+						summary={post.summary}
+						meta={[{ text: post.date }]}
+						transitionName={`blog-post-${post.slug}`}
+						attributes={{ id: post.slug }}
+					/>
 				))}
 			</section>
 		</main>
@@ -198,38 +197,7 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 	}
 
 	.shell {
-		width: min(720px, calc(100% - 32px));
-		margin: 0 auto;
-		padding: 24px 0 48px;
-	}
-
-	.topbar {
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 18px;
-		padding: 10px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 1%);
-		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
-		backdrop-filter: blur(12px);
-	}
-
-	.topbar a {
-		color: var(--accent-strong);
-		font-weight: 800;
-		text-decoration: none;
-	}
-
-	.topbar span {
-		color: var(--muted);
-		font-size: 0.86rem;
-		font-weight: 800;
+		--shell-width: 720px;
 	}
 
 	.blog-list {
@@ -284,11 +252,6 @@ const basePath = import.meta.env.BASE_URL.endsWith("/")
 	}
 
 	@media (max-width: 720px) {
-		.shell {
-			width: min(100% - 24px, 720px);
-			padding-top: 12px;
-		}
-
 		.post-link {
 			padding: 15px;
 		}

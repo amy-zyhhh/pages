@@ -1,7 +1,9 @@
 ---
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import Topbar from "../../components/Topbar.astro";
 import settings from "../../data/settings.json";
+import "../../styles/shared.css";
 import { parseInfoRssIndex, type InfoRssPost } from "../../utils/infoRssPosts";
 
 export function getStaticPaths() {
@@ -41,11 +43,8 @@ const htmlContent = post.contentHtml || "";
 		<title>{post.title}</title>
 	</head>
 	<body>
-		<main class="shell">
-			<nav class="topbar" aria-label="InfoRSS 通知导航">
-				<a href={`${basePath}inforss/`}>返回</a>
-				<span>InfoRSS</span>
-			</nav>
+		<main class="shell app-shell">
+			<Topbar ariaLabel="InfoRSS notice navigation" backHref={`${basePath}inforss/`} brand="InfoRSS" />
 
 			<article class="notice">
 				<div class="notice-meta">
@@ -134,38 +133,7 @@ const htmlContent = post.contentHtml || "";
 	}
 
 	.shell {
-		width: min(820px, calc(100% - 32px));
-		margin: 0 auto;
-		padding: 24px 0 48px;
-	}
-
-	.topbar {
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 20px;
-		padding: 10px;
-		border: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-		border-radius: 8px;
-		background: color-mix(in srgb, var(--panel), transparent 1%);
-		box-shadow: 0 4px 14px rgba(29, 41, 40, 0.03);
-		backdrop-filter: blur(12px);
-	}
-
-	.topbar a {
-		color: var(--accent-strong);
-		font-weight: 800;
-		text-decoration: none;
-	}
-
-	.topbar span {
-		color: var(--muted);
-		font-size: 0.86rem;
-		font-weight: 800;
+		--shell-width: 820px;
 	}
 
 	.notice {
