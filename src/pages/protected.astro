@@ -65,6 +65,7 @@ const shortcuts = settings.shortcuts;
 					<span>返回</span>
 					<a class="nav-button" href={basePath} aria-label="返回普通导航">←</a>
 				</label>
+				<span class="toolbar-title">加密导航</span>
 				<form class="search" id="searchForm" role="search">
 					<label for="searchInput">搜索</label>
 					<input id="searchInput" type="search" placeholder="搜索导航、blogs" autocomplete="off" />
@@ -312,7 +313,6 @@ const shortcuts = settings.shortcuts;
 	}
 
 	.toolbar {
-		--control-label-height: 16px;
 		--control-height: 38px;
 		position: sticky;
 		top: 0;
@@ -331,27 +331,32 @@ const shortcuts = settings.shortcuts;
 		backdrop-filter: blur(12px);
 	}
 
+	.toolbar-title {
+		display: none;
+		min-width: 0;
+		color: var(--text);
+		font-size: 1rem;
+		font-weight: 800;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.search {
 		display: grid;
-		grid-template-rows: var(--control-label-height) var(--control-height);
-		gap: 8px;
+		grid-template-rows: var(--control-height);
 	}
 
 	.search label,
 	.protected-control > span,
 	.theme-control > span {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: var(--control-label-height);
-		color: var(--muted);
-		font-size: 0.86rem;
-		font-weight: 700;
-		line-height: 1.2;
-	}
-
-	.search label {
-		justify-content: flex-start;
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
 	}
 
 	.search input {
@@ -383,8 +388,7 @@ const shortcuts = settings.shortcuts;
 	.protected-control,
 	.theme-control {
 		display: grid;
-		grid-template-rows: var(--control-label-height) var(--control-height);
-		gap: 8px;
+		grid-template-rows: var(--control-height);
 		justify-items: center;
 	}
 
@@ -535,6 +539,7 @@ const shortcuts = settings.shortcuts;
 		.toolbar {
 			--control-height: 36px;
 			grid-template-columns: auto minmax(0, 1fr) auto;
+			align-items: center;
 			gap: 10px;
 			margin-bottom: 14px;
 			padding: 10px;
@@ -547,12 +552,16 @@ const shortcuts = settings.shortcuts;
 			order: 2;
 		}
 
+		.toolbar-title {
+			display: block;
+		}
+
 		:root[data-mobile-search-open="true"] .search {
 			display: grid;
 		}
 
 		.actions {
-			align-items: end;
+			align-items: center;
 			flex-direction: row;
 			justify-content: end;
 		}

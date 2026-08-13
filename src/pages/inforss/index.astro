@@ -546,12 +546,14 @@ function formatDateTime(value: string) {
 	}
 
 	.topbar-main a {
+		order: 0;
 		color: var(--accent-strong);
 		font-weight: 800;
 		text-decoration: none;
 	}
 
 	.topbar-main span {
+		order: 1;
 		margin-left: auto;
 		color: var(--muted);
 		font-size: 0.86rem;
@@ -559,6 +561,7 @@ function formatDateTime(value: string) {
 	}
 
 	.mobile-filter-toggle {
+		order: 2;
 		display: none;
 		align-items: center;
 		justify-content: center;
@@ -845,6 +848,7 @@ function formatDateTime(value: string) {
 
 		.mobile-filter-toggle {
 			display: flex;
+			margin-left: 8px;
 		}
 
 		.filter-panel {
