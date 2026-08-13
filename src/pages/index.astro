@@ -55,11 +55,9 @@ const shortcuts = settings.shortcuts;
 	<body>
 		<main class="shell app-shell">
 			<Topbar ariaLabel="导航工具" title="我的导航" variant="home">
-				<div class="actions" slot="actions">
-					<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
-						⌕
-					</button>
-				</div>
+				<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索" slot="actions">
+					⌕
+				</button>
 				<form class="search topbar-search app-topbar-panel app-topbar-panel-full" id="searchForm" role="search" slot="panel">
 					<label for="searchInput">搜索</label>
 					<input id="searchInput" type="search" placeholder="搜索导航，输入 /关键词 后回车搜索 Bing" autocomplete="off" />
