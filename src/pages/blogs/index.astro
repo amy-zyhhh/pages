@@ -47,7 +47,7 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 	</head>
 	<body>
 		<main class="shell app-shell">
-			<Topbar ariaLabel="博客导航" backHref={`${basePath}protected/`} brand="blogs" variant="archive">
+			<Topbar ariaLabel="博客导航" backHref={`${basePath}protected/`} title="blogs" variant="archive">
 				<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="blogTools" aria-expanded="false" aria-label="展开搜索" slot="actions">
 					⌕
 				</button>

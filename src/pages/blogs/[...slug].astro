@@ -64,9 +64,8 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 		<main class="shell app-shell">
 			<div class="reader">
 				<div class="article-column">
-					<Topbar ariaLabel="Blog navigation" backHref={`${basePath}blogs/`} brand="blogs" variant="reader">
-						<span class="topbar-post-title" slot="start">{post.title}</span>
-						<button class="sidebar-toggle app-button" id="sidebarToggle" type="button" aria-controls="blogSidebar" aria-pressed="false" slot="actions">
+					<Topbar ariaLabel="Blog navigation" backHref={`${basePath}blogs/`} title={post.title} brand="blogs" variant="reader">
+						<button class="sidebar-toggle app-button topbar-directory-button" id="sidebarToggle" type="button" aria-controls="blogSidebar" aria-pressed="false" slot="actions">
 							目录
 						</button>
 					</Topbar>
@@ -418,39 +417,6 @@ const sidebarStorageKey = "navigation-blog-sidebar-hidden";
 
 	.shell {
 		--shell-width: 1080px;
-	}
-
-	.app-topbar-start::after {
-		width: 1px;
-		height: 20px;
-		background: color-mix(in srgb, var(--line), transparent 12%);
-		content: "";
-		opacity: 0;
-		transition: opacity 0.16s ease;
-	}
-
-	:root[data-scrolled="true"] .app-topbar-start::after {
-		opacity: 1;
-	}
-
-	.app-topbar .topbar-post-title {
-		overflow: hidden;
-		color: var(--text);
-		font-size: 1.05rem;
-		font-weight: 800;
-		line-height: 1.25;
-		opacity: 0;
-		text-overflow: ellipsis;
-		transform: translateY(4px);
-		transition:
-			opacity 0.16s ease,
-			transform 0.16s ease;
-		white-space: nowrap;
-	}
-
-	:root[data-scrolled="true"] .app-topbar .topbar-post-title {
-		opacity: 1;
-		transform: translateY(0);
 	}
 
 	.reader {

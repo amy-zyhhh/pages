@@ -44,6 +44,7 @@
 
 .app-topbar-actions {
 	justify-content: flex-end;
+	flex-wrap: nowrap;
 }
 
 .app-topbar-link {
@@ -76,9 +77,11 @@
 }
 
 .app-topbar-brand {
+	overflow: hidden;
 	color: var(--muted);
 	font-size: 0.92rem;
 	font-weight: 800;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
@@ -249,15 +252,6 @@
 
 .app-topbar-reader .app-topbar-center {
 	display: none;
-}
-
-.app-topbar-archive .app-topbar-row {
-	border-bottom: 1px solid color-mix(in srgb, var(--line), transparent 35%);
-	padding-bottom: 10px;
-}
-
-.app-topbar-archive .app-topbar-panel {
-	padding-top: 0;
 }
 
 .app-topbar-panel {
@@ -491,8 +485,33 @@
 	}
 
 	.app-topbar-row {
-		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		gap: 10px;
+	}
+
+	.app-topbar {
+		padding: 10px 12px;
+	}
+
+	.app-topbar-start {
+		gap: 8px;
+	}
+
+	.app-topbar-title {
+		font-size: 0.98rem;
+	}
+
+	.app-topbar-actions {
+		gap: 8px;
+	}
+
+	.app-topbar-brand {
+		max-width: 72px;
+	}
+
+	.pill-button,
+	.app-button {
+		padding-inline: 12px;
 	}
 
 	.custom-time {
