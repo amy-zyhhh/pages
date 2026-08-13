@@ -278,7 +278,7 @@
 
 .mobile-search-toggle,
 .mobile-filter-toggle {
-	display: none;
+	display: flex;
 }
 
 .blog-tools,
@@ -322,21 +322,37 @@
 	min-width: 0;
 }
 
+.search.app-topbar-panel,
+.blog-tools,
+.filter-panel {
+	display: none;
+	grid-column: 1 / -1;
+	width: 100%;
+}
+
+:root[data-mobile-search-open="true"] .search.app-topbar-panel,
+:root[data-mobile-search-open="true"] .blog-tools,
+:root[data-mobile-filters-open="true"] .filter-panel {
+	display: flex;
+}
+
+.search.app-topbar-panel {
+	justify-content: center;
+}
+
 .blog-tools {
-	display: grid;
-	grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-	align-items: center;
+	align-items: stretch;
+	flex-direction: column;
 }
 
 .filter-panel {
-	display: grid;
-	grid-template-columns: minmax(220px, 1fr) minmax(128px, auto) auto auto;
-	align-items: center;
+	align-items: stretch;
+	flex-direction: column;
 }
 
 .filter-panel .custom-time,
 .filter-panel .category-filter {
-	grid-column: 1 / -1;
+	width: 100%;
 }
 
 .filter-panel .custom-time {
@@ -389,6 +405,18 @@
 
 .filter-panel select {
 	min-width: 128px;
+}
+
+.search.app-topbar-panel .topbar-search,
+.search.app-topbar-panel,
+.blog-search,
+.notice-search,
+.blog-search.topbar-search,
+.notice-search.topbar-search,
+.filter-panel select,
+.filter-panel button,
+.custom-time input {
+	width: 100%;
 }
 
 .article-preview {
@@ -467,42 +495,8 @@
 		gap: 10px;
 	}
 
-	.mobile-search-toggle,
-	.mobile-filter-toggle {
-		display: flex;
-	}
-
-	.blog-tools,
-	.filter-panel {
-		display: none;
-		grid-column: 1 / -1;
-		width: 100%;
-	}
-
-	:root[data-mobile-search-open="true"] .blog-tools,
-	:root[data-mobile-filters-open="true"] .filter-panel {
-		display: flex;
-	}
-
-	.blog-tools {
-		align-items: stretch;
-		flex-direction: column;
-	}
-
-	.filter-panel,
 	.custom-time {
-		align-items: stretch;
 		flex-direction: column;
-	}
-
-	.blog-search,
-	.notice-search,
-	.blog-search.topbar-search,
-	.notice-search.topbar-search,
-	.filter-panel select,
-	.filter-panel button,
-	.custom-time input {
-		width: 100%;
 	}
 
 	.article-preview-link {

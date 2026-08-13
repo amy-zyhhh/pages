@@ -64,10 +64,6 @@ const shortcuts = settings.shortcuts;
 	<body>
 		<main class="shell app-shell">
 			<Topbar ariaLabel="导航工具" backHref={basePath} backText="返回" title="我的导航" variant="home">
-				<form class="search topbar-search" id="searchForm" role="search">
-					<label class="sr-only" for="searchInput">搜索</label>
-					<input id="searchInput" type="search" placeholder="搜索导航、blogs" autocomplete="off" />
-				</form>
 				<div class="actions" slot="actions">
 					<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
@@ -81,6 +77,10 @@ const shortcuts = settings.shortcuts;
 						</button>
 					</label>
 				</div>
+				<form class="search topbar-search app-topbar-panel app-topbar-panel-full" id="searchForm" role="search" slot="panel">
+					<label class="sr-only" for="searchInput">搜索</label>
+					<input id="searchInput" type="search" placeholder="搜索导航、blogs" autocomplete="off" />
+				</form>
 			</Topbar>
 
 			<div class="sections">
@@ -374,35 +374,10 @@ const shortcuts = settings.shortcuts;
 	}
 
 	@media (max-width: 720px) {
-		.search {
-			--control-height: 36px;
-			display: none;
-			grid-column: 1 / -1;
-			order: 2;
-		}
-
-		:root[data-mobile-search-open="true"] .search {
-			display: grid;
-		}
-
 		.actions {
 			align-items: center;
 			flex-direction: row;
 			justify-content: end;
-		}
-
-		.search input {
-			padding: 8px 10px;
-		}
-
-		.nav-button,
-		.theme-button,
-		.mobile-search-toggle {
-			width: 48px;
-		}
-
-		.mobile-search-toggle {
-			display: flex;
 		}
 
 		.sections {

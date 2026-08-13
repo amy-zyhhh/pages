@@ -56,10 +56,6 @@ const shortcuts = settings.shortcuts;
 	<body>
 		<main class="shell app-shell">
 			<Topbar ariaLabel="导航工具" title="我的导航" variant="home">
-				<form class="search topbar-search" id="searchForm" role="search">
-					<label for="searchInput">搜索</label>
-					<input id="searchInput" type="search" placeholder="搜索导航，输入 /关键词 后回车搜索 Bing" autocomplete="off" />
-				</form>
 				<div class="actions" slot="actions">
 					<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
@@ -73,6 +69,10 @@ const shortcuts = settings.shortcuts;
 						</button>
 					</label>
 				</div>
+				<form class="search topbar-search app-topbar-panel app-topbar-panel-full" id="searchForm" role="search" slot="panel">
+					<label for="searchInput">搜索</label>
+					<input id="searchInput" type="search" placeholder="搜索导航，输入 /关键词 后回车搜索 Bing" autocomplete="off" />
+				</form>
 			</Topbar>
 
 			<div class="sections">
@@ -428,20 +428,6 @@ const shortcuts = settings.shortcuts;
 	}
 
 	@media (max-width: 720px) {
-		.search {
-			display: none;
-			grid-column: 1 / -1;
-			order: 2;
-		}
-
-		:root[data-mobile-search-open="true"] .search {
-			display: grid;
-		}
-
-		.mobile-search-toggle {
-			display: flex;
-		}
-
 		.sections {
 			gap: 18px;
 		}
