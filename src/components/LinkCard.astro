@@ -108,9 +108,33 @@ const accent = accentMap[category] ?? "rgba(64, 190, 178, 0.92)";
   }
 
   @media (max-width: 720px) {
+    .link-card {
+      border-color: color-mix(in srgb, var(--line), transparent 22%);
+      box-shadow: 0 5px 16px rgba(34, 41, 43, 0.035);
+    }
+
+    .link-card::before {
+      width: 3px;
+    }
+
     .link-card a {
-      min-height: 42px;
-      padding: 8px 12px 8px 14px;
+      gap: 10px;
+      min-height: 40px;
+      padding: 7px 10px 7px 13px;
+    }
+
+    img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .fallback-icon {
+      width: 10px;
+      height: 10px;
+    }
+
+    h3 {
+      font-size: 0.94rem;
     }
   }
 </style>

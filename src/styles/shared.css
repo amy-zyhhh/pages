@@ -456,21 +456,26 @@
 
 @media (max-width: 720px) {
 	.app-shell {
-		width: min(100% - 24px, var(--shell-width, 1180px));
-		padding-top: 12px;
+		width: min(100% - 20px, var(--shell-width, 1180px));
+		padding-top: 10px;
 	}
 
 	.app-topbar {
+		--topbar-control-height: 32px;
+		gap: 8px;
+		margin-inline: auto;
 		margin-bottom: 14px;
+		padding: 8px 10px;
+		border-color: rgba(29, 41, 40, 0.1);
+		border-radius: 12px;
+		background: rgba(255, 253, 248, 0.92);
+		box-shadow: 0 8px 24px rgba(34, 41, 43, 0.055);
 	}
 
 	.app-topbar-row {
 		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 10px;
-	}
-
-	.app-topbar {
-		padding: 10px 12px;
+		min-height: var(--topbar-control-height);
+		gap: 8px;
 	}
 
 	.app-topbar-start {
@@ -487,6 +492,13 @@
 
 	.app-topbar-brand {
 		max-width: 72px;
+	}
+
+	.icon-button,
+	.app-icon-button {
+		border-color: rgba(29, 41, 40, 0.1);
+		background: rgba(255, 255, 255, 0.82);
+		box-shadow: none;
 	}
 
 	.pill-button,

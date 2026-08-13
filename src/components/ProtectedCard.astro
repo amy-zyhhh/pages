@@ -74,9 +74,28 @@ const accent = "rgba(153, 204, 128, 0.92)";
   }
 
   @media (max-width: 720px) {
+    .protected-card {
+      border-color: color-mix(in srgb, var(--line), transparent 22%);
+      box-shadow: 0 5px 16px rgba(34, 41, 43, 0.035);
+    }
+
+    .protected-card::before {
+      width: 3px;
+    }
+
     .protected-link {
-      min-height: 42px;
-      padding: 8px 12px 8px 14px;
+      gap: 10px;
+      min-height: 40px;
+      padding: 7px 10px 7px 13px;
+    }
+
+    .fallback-icon {
+      width: 10px;
+      height: 10px;
+    }
+
+    .protected-title {
+      font-size: 0.94rem;
     }
   }
 </style>
