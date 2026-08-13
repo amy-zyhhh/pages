@@ -473,9 +473,22 @@
 	}
 
 	.app-topbar-row {
+		grid-template-areas: "start actions";
 		grid-template-columns: minmax(0, 1fr) auto;
 		min-height: 36px;
 		gap: 8px;
+	}
+
+	.app-topbar-start {
+		grid-area: start;
+	}
+
+	.app-topbar-center {
+		display: none;
+	}
+
+	.app-topbar-actions {
+		grid-area: actions;
 	}
 
 	.app-topbar-start,
