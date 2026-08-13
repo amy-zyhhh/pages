@@ -50,6 +50,7 @@ function formatDateTime(value: string) {
 	lang="zh-CN"
 	data-default-theme={settings.theme.default}
 	data-theme-storage-key={settings.theme.storageKey}
+	data-shortcut-search={settings.shortcuts.focusSearch}
 >
 	<head>
 		<meta charset="utf-8" />
@@ -72,7 +73,7 @@ function formatDateTime(value: string) {
 						<input id="noticeSearchInput" type="search" placeholder="搜索通知" autocomplete="off" />
 					</form>
 					<select id="searchScope" aria-label="搜索范围">
-						<option value="all">全部内容</option>
+						<option value="all">全部内容（含正文）</option>
 						<option value="titleSummary">标题与摘要</option>
 					</select>
 					<button class="clear-button app-button" type="button" id="clearFilters">清空</button>
@@ -431,6 +432,15 @@ function formatDateTime(value: string) {
 				root,
 				datasetKey: "mobileFiltersOpen",
 				focusTarget: searchInput,
+			});
+			window.addEventListener("keydown", (event) => {
+				const shortcut = root.dataset.shortcutSearch || "/";
+				const isTyping = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName || "");
+				if (event.key !== shortcut || isTyping) return;
+				event.preventDefault();
+				root.dataset.mobileFiltersOpen = "true";
+				mobileFilterToggle?.setAttribute("aria-expanded", "true");
+				searchInput?.focus();
 			});
 			clearFilters?.addEventListener("click", () => {
 				searchInput.value = "";

@@ -33,6 +33,7 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 	class="locked"
 	data-default-theme={settings.theme.default}
 	data-theme-storage-key={settings.theme.storageKey}
+	data-shortcut-search={settings.shortcuts.focusSearch}
 	data-unlocked-storage-key={settings.protectedAccess.storageKey}
 	data-home-url={basePath}
 >
@@ -147,6 +148,15 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 					root: document.documentElement,
 					datasetKey: "mobileSearchOpen",
 					focusTarget: searchInput,
+				});
+				window.addEventListener("keydown", (event) => {
+					const shortcut = document.documentElement.dataset.shortcutSearch || "/";
+					const isTyping = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "");
+					if (event.key !== shortcut || isTyping) return;
+					event.preventDefault();
+					document.documentElement.dataset.mobileSearchOpen = "true";
+					mobileSearchToggle?.setAttribute("aria-expanded", "true");
+					searchInput.focus();
 				});
 				updatePosts();
 			}

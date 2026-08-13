@@ -1,4 +1,6 @@
 ---
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import ArticlePreviewCard from "../components/ArticlePreviewCard.astro";
 import MobilePanelScript from "../components/MobilePanelScript.astro";
 import Topbar from "../components/Topbar.astro";
@@ -6,6 +8,7 @@ import LinkCard from "../components/LinkCard.astro";
 import protectedLinksYaml from "../data/protected-links.yaml?raw";
 import settings from "../data/settings.json";
 import { parseBlogPosts } from "../utils/blogPosts";
+import { infoRssPostSearchText, parseInfoRssPayload } from "../utils/infoRssPosts";
 import { parseYamlLinks, type Link } from "../utils/parseLinks";
 import { blogPostSearchText, linkToSearchCard, type SearchCardItem } from "../utils/searchItems";
 import "../styles/shared.css";
@@ -30,15 +33,21 @@ const blogModules = import.meta.glob("../../blogs/**/*.md", {
 	eager: true,
 });
 const blogPosts = parseBlogPosts(blogModules);
+const infoRssIndexPath = join(process.cwd(), "data-generated", "inforss", "index.json");
+const infoRssIndexRaw = existsSync(infoRssIndexPath)
+	? readFileSync(infoRssIndexPath, "utf-8")
+	: JSON.stringify({ posts: [] });
+const infoRssPosts = parseInfoRssPayload(infoRssIndexRaw).posts;
 const explicitlyIncludedProtectedSearchItems: SearchCardItem[] = [];
-// Search scope: protected links, blog posts, and the explicit list above.
+// Search scope: protected links, blog posts, InfoRSS posts, and the explicit list above.
 // Future content types must be added here deliberately before this search box can see them.
-// Display order is intentional: link-like cards first, then blog previews.
+// Display order is intentional: link-like cards first, then blog previews, then InfoRSS previews.
 const protectedSearchLinkItems: SearchCardItem[] = [
 	...sortedLinks.map(linkToSearchCard),
 	...explicitlyIncludedProtectedSearchItems,
 ];
 const protectedSearchBlogPosts = blogPosts;
+const protectedSearchInfoRssPosts = infoRssPosts;
 const shortcuts = settings.shortcuts;
 ---
 
@@ -49,7 +58,6 @@ const shortcuts = settings.shortcuts;
 	data-theme-storage-key={settings.theme.storageKey}
 	data-shortcut-search={shortcuts.focusSearch}
 	data-shortcut-clear={shortcuts.clearSearch}
-	data-shortcut-theme={shortcuts.toggleTheme}
 	data-unlocked-storage-key={settings.protectedAccess.storageKey}
 	data-home-url={basePath}
 >
@@ -68,18 +76,10 @@ const shortcuts = settings.shortcuts;
 					<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
 					</button>
-					<label class="theme-control">
-						<span>主题</span>
-						<button class="theme-button app-icon-button" id="themeButton" type="button" aria-label="切换深浅色">
-							<span class="theme-track" aria-hidden="true">
-								<span class="theme-thumb"></span>
-							</span>
-						</button>
-					</label>
 				</div>
 				<form class="search topbar-search app-topbar-panel app-topbar-panel-full" id="searchForm" role="search" slot="panel">
 					<label class="sr-only" for="searchInput">搜索</label>
-					<input id="searchInput" type="search" placeholder="搜索导航、blogs" autocomplete="off" />
+					<input id="searchInput" type="search" placeholder="搜索导航、blogs、InfoRSS" autocomplete="off" />
 				</form>
 			</Topbar>
 
@@ -99,6 +99,22 @@ const shortcuts = settings.shortcuts;
 								summary={post.summary}
 								meta={[{ text: post.date }, { text: post.category }]}
 								searchText={blogPostSearchText(post)}
+								headingLevel={3}
+							/>
+						))}
+					</div>
+					<div class="search-group blog-result-group" data-search-group>
+						{protectedSearchInfoRssPosts.map((post) => (
+							<ArticlePreviewCard
+								href={`${basePath}inforss/${post.slug}/`}
+								title={post.title}
+								summary={post.summary}
+								meta={[
+									{ text: post.date },
+									{ text: post.category },
+									...(post.department ? [{ text: post.department }] : []),
+								]}
+								searchText={infoRssPostSearchText(post)}
 								headingLevel={3}
 							/>
 						))}
@@ -142,16 +158,14 @@ const shortcuts = settings.shortcuts;
 			const searchGroups = Array.from(document.querySelectorAll("[data-search-group]"));
 			const normalSections = Array.from(document.querySelectorAll("[data-section]"));
 			const emptyState = document.querySelector("#emptyState");
-			const themeButton = document.querySelector("#themeButton");
 			const mobileSearchToggle = document.querySelector("#mobileSearchToggle");
-			if (!searchForm || !searchInput || !searchSection || !emptyState || !themeButton || !mobileSearchToggle) {
+			if (!searchForm || !searchInput || !searchSection || !emptyState || !mobileSearchToggle) {
 				throw new Error("Protected navigation controls are incomplete.");
 			}
 			const searchCards = Array.from(searchSection.querySelectorAll("[data-card]"));
 			const shortcuts = {
 				focusSearch: root.dataset.shortcutSearch || "/",
 				clearSearch: root.dataset.shortcutClear || "Escape",
-				toggleTheme: root.dataset.shortcutTheme || "t",
 			};
 
 			function systemTheme() {
@@ -166,11 +180,6 @@ const shortcuts = settings.shortcuts;
 				root.dataset.theme = resolveTheme(theme);
 				root.dataset.themeChoice = theme;
 				localStorage.setItem(storageKey, theme);
-			}
-
-			function toggleTheme() {
-				const current = root.dataset.themeChoice || defaultTheme;
-				setTheme(resolveTheme(current) === "dark" ? "light" : "dark");
 			}
 
 			function updateCards() {
@@ -207,7 +216,6 @@ const shortcuts = settings.shortcuts;
 			searchForm.addEventListener("submit", (event) => {
 				event.preventDefault();
 			});
-			themeButton.addEventListener("click", toggleTheme);
 			window.initMobilePanelToggle?.({
 				button: mobileSearchToggle,
 				root,
@@ -220,6 +228,8 @@ const shortcuts = settings.shortcuts;
 
 				if (key === shortcuts.focusSearch && !isTyping) {
 					event.preventDefault();
+					root.dataset.mobileSearchOpen = "true";
+					mobileSearchToggle.setAttribute("aria-expanded", "true");
 					searchInput.focus();
 					return;
 				}
@@ -229,10 +239,6 @@ const shortcuts = settings.shortcuts;
 					updateCards();
 					searchInput.blur();
 					return;
-				}
-
-				if (key.toLowerCase() === shortcuts.toggleTheme.toLowerCase() && !isTyping) {
-					toggleTheme();
 				}
 			});
 		</script>

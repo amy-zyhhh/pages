@@ -33,7 +33,6 @@ const shortcuts = settings.shortcuts;
 	data-theme-storage-key={settings.theme.storageKey}
 	data-shortcut-search={shortcuts.focusSearch}
 	data-shortcut-clear={shortcuts.clearSearch}
-	data-shortcut-theme={shortcuts.toggleTheme}
 	data-web-search-prefix={settings.webSearch.prefix}
 	data-web-search-url={settings.webSearch.url}
 	data-web-search-target={settings.webSearch.target}
@@ -60,14 +59,6 @@ const shortcuts = settings.shortcuts;
 					<button class="mobile-search-toggle app-icon-button" id="mobileSearchToggle" type="button" aria-controls="searchForm" aria-expanded="false" aria-label="展开搜索">
 						⌕
 					</button>
-					<label class="theme-control">
-						<span>主题</span>
-						<button class="theme-button app-icon-button" id="themeButton" type="button" aria-label="切换深浅色">
-							<span class="theme-track" aria-hidden="true">
-								<span class="theme-thumb"></span>
-							</span>
-						</button>
-					</label>
 				</div>
 				<form class="search topbar-search app-topbar-panel app-topbar-panel-full" id="searchForm" role="search" slot="panel">
 					<label for="searchInput">搜索</label>
@@ -119,10 +110,9 @@ const shortcuts = settings.shortcuts;
 			const searchSection = document.querySelector("[data-search-section]");
 			const normalSections = Array.from(document.querySelectorAll("[data-section]"));
 			const emptyState = document.querySelector("#emptyState");
-			const themeButton = document.querySelector("#themeButton");
 			const mobileSearchToggle = document.querySelector("#mobileSearchToggle");
 			const protectedButton = document.querySelector("#protectedButton");
-			if (!searchForm || !searchInput || !searchSection || !emptyState || !themeButton || !mobileSearchToggle || !protectedButton) {
+			if (!searchForm || !searchInput || !searchSection || !emptyState || !mobileSearchToggle || !protectedButton) {
 				throw new Error("Navigation page controls are incomplete.");
 			}
 			const searchCards = Array.from(searchSection.querySelectorAll("[data-card]"));
@@ -136,7 +126,6 @@ const shortcuts = settings.shortcuts;
 			const shortcuts = {
 				focusSearch: root.dataset.shortcutSearch || "/",
 				clearSearch: root.dataset.shortcutClear || "Escape",
-				toggleTheme: root.dataset.shortcutTheme || "t",
 			};
 			const protectedAccess = {
 				url: root.dataset.protectedUrl || "/protected/",
@@ -160,11 +149,6 @@ const shortcuts = settings.shortcuts;
 				root.dataset.theme = resolveTheme(theme);
 				root.dataset.themeChoice = theme;
 				localStorage.setItem(storageKey, theme);
-			}
-
-			function toggleTheme() {
-				const current = root.dataset.themeChoice || defaultTheme;
-				setTheme(resolveTheme(current) === "dark" ? "light" : "dark");
 			}
 
 			function getWebSearchQuery(value) {
@@ -269,7 +253,6 @@ const shortcuts = settings.shortcuts;
 
 				openWebSearch(query);
 			});
-			themeButton.addEventListener("click", toggleTheme);
 			window.initMobilePanelToggle?.({
 				button: mobileSearchToggle,
 				root,
@@ -283,6 +266,8 @@ const shortcuts = settings.shortcuts;
 
 				if (key === shortcuts.focusSearch && !isTyping) {
 					event.preventDefault();
+					root.dataset.mobileSearchOpen = "true";
+					mobileSearchToggle.setAttribute("aria-expanded", "true");
 					searchInput.focus();
 					return;
 				}
@@ -292,10 +277,6 @@ const shortcuts = settings.shortcuts;
 					updateCards();
 					searchInput.blur();
 					return;
-				}
-
-				if (key.toLowerCase() === shortcuts.toggleTheme.toLowerCase() && !isTyping) {
-					toggleTheme();
 				}
 			});
 		</script>

@@ -149,53 +149,11 @@
 	box-shadow: 0 0 0 4px rgba(38, 127, 134, 0.14);
 }
 
-.theme-button {
-	width: 52px;
-}
-
-.theme-control,
 .actions {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
 	gap: 10px;
-}
-
-.theme-control > span {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-}
-
-.theme-track {
-	position: relative;
-	display: block;
-	width: 34px;
-	height: 18px;
-	border-radius: 999px;
-	background: linear-gradient(90deg, #f0c86e, #7aa7b8);
-}
-
-.theme-thumb {
-	position: absolute;
-	display: block;
-	top: 3px;
-	left: 3px;
-	width: 12px;
-	height: 12px;
-	border-radius: 999px;
-	background: #fff8df;
-	transition:
-		background 160ms ease,
-		transform 160ms ease;
-}
-
-:root[data-theme="dark"] .theme-thumb {
-	background: #d9eef0;
-	transform: translateX(16px);
 }
 
 .topbar-search {

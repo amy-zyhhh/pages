@@ -5,8 +5,7 @@
   },
   "shortcuts": {
     "focusSearch": "/",
-    "clearSearch": "Escape",
-    "toggleTheme": "t"
+    "clearSearch": "Escape"
   },
   "webSearch": {
     "prefix": "/",
