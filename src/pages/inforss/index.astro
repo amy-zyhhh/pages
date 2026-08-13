@@ -68,9 +68,10 @@ function formatDateTime(value: string) {
 				</button>
 
 				<div class="filter-panel app-topbar-panel app-topbar-panel-full" id="filterPanel" slot="panel">
-					<form class="notice-search topbar-search" role="search">
+					<form class="notice-search topbar-search" id="noticeSearchForm" role="search">
 						<label class="sr-only" for="noticeSearchInput">搜索</label>
 						<input id="noticeSearchInput" type="search" placeholder="搜索通知" autocomplete="off" />
+						<button class="app-button search-submit" type="submit">搜索</button>
 					</form>
 					<select id="searchScope" aria-label="搜索范围">
 						<option value="all">全部内容（含正文）</option>
@@ -187,6 +188,7 @@ function formatDateTime(value: string) {
 			const root = document.documentElement;
 			const storageKey = root.dataset.themeStorageKey || "navigation-theme";
 			const defaultTheme = root.dataset.defaultTheme || "system";
+			const searchForm = document.querySelector("#noticeSearchForm");
 			const searchInput = document.querySelector("#noticeSearchInput");
 			const searchScope = document.querySelector("#searchScope");
 			const dateFrom = document.querySelector("#dateFrom");
@@ -415,6 +417,10 @@ function formatDateTime(value: string) {
 				});
 			});
 
+			searchForm?.addEventListener("submit", (event) => {
+				event.preventDefault();
+				rerunFromFirstPage();
+			});
 			searchInput?.addEventListener("input", rerunFromFirstPage);
 			searchScope?.addEventListener("change", rerunFromFirstPage);
 			dateFrom?.addEventListener("change", rerunFromFirstPage);

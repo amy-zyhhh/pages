@@ -53,9 +53,10 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 					⌕
 				</button>
 				<div class="blog-tools app-topbar-panel app-topbar-panel-full" id="blogTools" slot="panel">
-					<form class="blog-search topbar-search" role="search">
+					<form class="blog-search topbar-search" id="blogSearchForm" role="search">
 						<label class="sr-only" for="blogSearchInput">搜索</label>
 						<input id="blogSearchInput" type="search" placeholder="搜索 blogs" autocomplete="off" />
+						<button class="app-button search-submit" type="submit">搜索</button>
 					</form>
 					<div class="category-nav" aria-label="博客分类">
 						{categories.map((category) => (
@@ -117,6 +118,7 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 			}
 
 			function initBlogListPage() {
+				const searchForm = document.querySelector("#blogSearchForm");
 				const searchInput = document.querySelector("#blogSearchInput");
 				const mobileSearchToggle = document.querySelector("#mobileSearchToggle");
 				const posts = Array.from(document.querySelectorAll("[data-post]"));
@@ -143,6 +145,10 @@ const dateGroups = Array.from(new Set(blogSearchPosts.map((post) => post.date)))
 				}
 
 				searchInput.oninput = updatePosts;
+				searchForm?.addEventListener("submit", (event) => {
+					event.preventDefault();
+					updatePosts();
+				});
 				window.initMobilePanelToggle?.({
 					button: mobileSearchToggle,
 					root: document.documentElement,

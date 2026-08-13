@@ -158,6 +158,9 @@
 
 .topbar-search {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 8px;
 	width: min(var(--topbar-search-width), 100%);
 }
 
@@ -185,7 +188,14 @@
 
 .topbar-search input {
 	width: 100%;
+	min-width: 0;
 	outline: none;
+}
+
+.topbar-search .search-submit {
+	min-width: 64px;
+	width: auto;
+	white-space: nowrap;
 }
 
 .topbar-search input:focus,
@@ -289,7 +299,14 @@
 }
 
 .search.app-topbar-panel {
-	justify-content: center;
+	display: none;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	justify-content: stretch;
+}
+
+:root[data-mobile-search-open="true"] .search.app-topbar-panel {
+	display: grid;
 }
 
 .blog-tools {
@@ -369,6 +386,11 @@
 .filter-panel button,
 .custom-time input {
 	width: 100%;
+}
+
+.filter-panel .topbar-search .search-submit,
+.blog-tools .topbar-search .search-submit {
+	width: auto;
 }
 
 .article-preview {

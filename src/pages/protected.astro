@@ -80,6 +80,7 @@ const shortcuts = settings.shortcuts;
 				<form class="search topbar-search app-topbar-panel app-topbar-panel-full" id="searchForm" role="search" slot="panel">
 					<label class="sr-only" for="searchInput">搜索</label>
 					<input id="searchInput" type="search" placeholder="搜索导航、blogs、InfoRSS" autocomplete="off" />
+					<button class="app-button search-submit" type="submit">搜索</button>
 				</form>
 			</Topbar>
 
@@ -215,6 +216,7 @@ const shortcuts = settings.shortcuts;
 			searchInput.addEventListener("input", updateCards);
 			searchForm.addEventListener("submit", (event) => {
 				event.preventDefault();
+				updateCards();
 			});
 			window.initMobilePanelToggle?.({
 				button: mobileSearchToggle,
