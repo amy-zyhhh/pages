@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-15T19:00:04.695Z",
-  "lastScrapeAt": "2026-08-15T19:00:04.695Z",
-  "total": 126,
+  "generatedAt": "2026-08-16T19:00:04.514Z",
+  "lastScrapeAt": "2026-08-16T19:00:04.514Z",
+  "total": 127,
   "errorCount": 0,
   "sources": [
     {
@@ -14,6 +14,7 @@
     }
   ],
   "tags": [
+    "学生社区通知",
     "招聘信息",
     "招标招租",
     "七日信息",
@@ -21,11 +22,32 @@
     "办公通知",
     "科研通知",
     "综合信息",
-    "教务通知",
-    "学生社区通知"
+    "教务通知"
   ],
   "errors": [],
   "posts": [
+    {
+      "id": "202baf4a2fe0a6b2931af631e4c7adf1",
+      "xxid": "202baf4a2fe0a6b2931af631e4c7adf1",
+      "slug": "202baf4a2fe0a6b2931af631e4c7adf1",
+      "title": "                            关于展棚搭建及物料卸车作业的通知",
+      "date": "20260816",
+      "time": "2026-08-16 15:38",
+      "category": "学生社区通知",
+      "department": "学生社区中心",
+      "sourceId": "tsinghua-info-xs",
+      "sourceName": "清华信息门户",
+      "source": "清华信息门户",
+      "sourceUrl": "https://info.tsinghua.edu.cn/f/info/route?id=202baf4a2fe0a6b2931af631e4c7adf1",
+      "summary": "",
+      "preview": "",
+      "contentHtml": "",
+      "contentText": "",
+      "attachments": [],
+      "searchText": "关于展棚搭建及物料卸车作业的通知 20260816 2026-08-16 15:38",
+      "fetchedAt": "2026-08-16T19:00:04.106Z",
+      "cacheVersion": 2
+    },
     {
       "id": "bdb5faad4cdf74a047593bf4bc26f374",
       "xxid": "bdb5faad4cdf74a047593bf4bc26f374",
