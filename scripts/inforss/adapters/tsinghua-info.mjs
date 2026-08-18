@@ -1,6 +1,13 @@
 ﻿const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36";
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 7;
+
+import { fetchAndParseCicOathDetail, isCicOathDetailUrl } from "../detail-parsers/cic-oath.mjs";
+import { fetchAndParseCareerPosition, isCareerPositionUrl } from "../detail-parsers/career-position.mjs";
+import { fetchAndParseGhxtDetail, isGhxtDetailUrl } from "../detail-parsers/ghxt-detail.mjs";
+import { fetchAndParseKybgDetail, isKybgDetailUrl } from "../detail-parsers/kybg-detail.mjs";
+import { fetchAndParseLibNews, isLibNewsUrl } from "../detail-parsers/lib-news.mjs";
+import { fetchAndParseMyhomeNoticeDetail, isMyhomeNoticeDetailUrl } from "../detail-parsers/myhome-notice.mjs";
 
 export async function fetchTsinghuaInfo(source, options = {}) {
   const cookieJar = new Map();
@@ -44,21 +51,12 @@ export async function fetchTsinghuaInfo(source, options = {}) {
         if (rangeState === "newer" || rangeState === "unknown") return;
 
         const urlKey = normalizeUrlKey(getItemSourceUrl(source, item));
-        if (!urlKey || seenUrlKeys.has(urlKey)) return;
+        if (!urlKey) return;
+        if (seenUrlKeys.has(urlKey)) return;
         seenUrlKeys.add(urlKey);
 
-        const cachedPost = existingPostsByUrl.get(urlKey);
-        if (cachedPost?.cacheVersion === CACHE_VERSION) {
-          return {
-            ...cachedPost,
-            sourceId: source.id,
-            sourceName: source.name,
-            source: source.name,
-          };
-        }
-
         try {
-          return await fetchDetail(source, item, csrf, cookieJar);
+          return await fetchDetail(source, item, csrf, cookieJar, existingPostsByUrl);
         } catch (error) {
           errors.push(buildError(item, source, "detail", error));
         }
@@ -107,7 +105,7 @@ async function mapLimit(items, limit, task) {
   return results;
 }
 
-async function fetchDetail(source, item, csrf, cookieJar) {
+async function fetchDetail(source, item, csrf, cookieJar, existingPostsByUrl) {
   const detailUrl = buildApiUrl(source, "/b/info/xxfb_fg/xnzx/template/detail", {
     xxid: item.xxid,
     preview: "",
@@ -129,6 +127,40 @@ async function fetchDetail(source, item, csrf, cookieJar) {
   const contentText = htmlToText(contentHtml);
   const listSummary = htmlToText(decodeHtml(item.nr_show || item.nr || ""));
   const summary = makePreview(listSummary);
+  const category = detail.lmmc_show || detail.lmmc || item.lmmc_show || item.lmmc || "\u672a\u5206\u7c7b";
+  const department = detail.lydw_show || detail.lydw || item.dwmc_show || item.dwmc || "";
+
+  const externalDetail = await resolveExternalDetail(sourceUrl);
+  if (externalDetail) {
+    const context = {
+      category,
+      department,
+      sourceId: source.id,
+      sourceName: source.name,
+      source: source.name,
+    };
+    const cachedExternalPost = existingPostsByUrl.get(normalizeUrlKey(externalDetail.url));
+
+    const parseExternalDetail = getExternalDetailParser(externalDetail.type);
+    if (!parseExternalDetail) return null;
+    const externalPost = await parseExternalDetail(externalDetail.url, {
+      source,
+      item,
+      fallback: {
+        title,
+        date,
+        time,
+        category,
+        department,
+        summary,
+        sourceId: source.id,
+        sourceName: source.name,
+        source: source.name,
+        cacheVersion: CACHE_VERSION,
+      },
+    });
+    return withListContext(preserveExistingContext(externalPost, cachedExternalPost), context, [sourceUrl]);
+  }
 
   return {
     id: item.xxid,
@@ -137,8 +169,8 @@ async function fetchDetail(source, item, csrf, cookieJar) {
     title,
     date,
     time,
-    category: detail.lmmc_show || detail.lmmc || item.lmmc_show || item.lmmc || "\u672a\u5206\u7c7b",
-    department: detail.lydw_show || detail.lydw || item.dwmc_show || item.dwmc || "",
+    category,
+    department,
     sourceId: source.id,
     sourceName: source.name,
     source: source.name,
@@ -152,6 +184,118 @@ async function fetchDetail(source, item, csrf, cookieJar) {
     fetchedAt: new Date().toISOString(),
     cacheVersion: CACHE_VERSION,
   };
+}
+
+function preserveExistingContext(post, existing) {
+  if (!existing || isDirectDetailPost(existing)) return post;
+  return {
+    ...post,
+    category: existing.category || post.category,
+    department: existing.department || post.department,
+    sourceId: existing.sourceId || post.sourceId,
+    sourceName: existing.sourceName || post.sourceName,
+    source: existing.source || post.source,
+    alternateSourceUrls: uniqueStrings([
+      ...(post.alternateSourceUrls || []),
+      ...(existing.alternateSourceUrls || []),
+      existing.sourceUrl,
+    ].filter((url) => url && url !== post.sourceUrl)),
+  };
+}
+
+function withListContext(post, context, aliases = []) {
+  const alternateSourceUrls = uniqueStrings([...(post.alternateSourceUrls || []), ...aliases].filter((url) => url && url !== post.sourceUrl));
+  return {
+    ...post,
+    category: context.category || post.category,
+    department: context.department || post.department,
+    sourceId: context.sourceId || post.sourceId,
+    sourceName: context.sourceName || post.sourceName,
+    source: context.source || post.source,
+    alternateSourceUrls,
+  };
+}
+
+function isDirectDetailPost(post) {
+  return post?.sourceId === "direct-detail" || post?.category === "\u76f4\u63a5\u8be6\u60c5\u9875";
+}
+
+function uniqueStrings(values) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+async function resolveExternalDetail(sourceUrl) {
+  if (!sourceUrl) return "";
+  const directExternal = classifyExternalDetailUrl(sourceUrl);
+  if (directExternal) return directExternal;
+
+  if (!shouldProbeDetailRedirect(sourceUrl)) return "";
+
+  const response = await requestHtml(sourceUrl);
+  const finalExternal = classifyExternalDetailUrl(response.url);
+  if (finalExternal) return finalExternal;
+
+  const clientRedirectUrl = extractClientRedirectUrl(response.html, response.url);
+  return classifyExternalDetailUrl(clientRedirectUrl);
+}
+
+function classifyExternalDetailUrl(url) {
+  if (isCicOathDetailUrl(url)) return { type: "cic-oath", url };
+  if (isCareerPositionUrl(url)) return { type: "career-position", url };
+  if (isGhxtDetailUrl(url)) return { type: "ghxt-detail", url };
+  if (isKybgDetailUrl(url)) return { type: "kybg-detail", url };
+  if (isLibNewsUrl(url)) return { type: "lib-news", url };
+  if (isMyhomeNoticeDetailUrl(url)) return { type: "myhome-notice", url };
+  return null;
+}
+
+function getExternalDetailParser(type) {
+  if (type === "cic-oath") return fetchAndParseCicOathDetail;
+  if (type === "career-position") return fetchAndParseCareerPosition;
+  if (type === "ghxt-detail") return fetchAndParseGhxtDetail;
+  if (type === "kybg-detail") return fetchAndParseKybgDetail;
+  if (type === "lib-news") return fetchAndParseLibNews;
+  if (type === "myhome-notice") return fetchAndParseMyhomeNoticeDetail;
+  return null;
+}
+
+function shouldProbeDetailRedirect(value) {
+  try {
+    const url = new URL(value);
+    return url.hostname === "info.tsinghua.edu.cn" && /\/f\/info\/xxfb_fg\/xnzx\/template\/detail/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+async function requestHtml(url) {
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+      "User-Agent": USER_AGENT,
+    },
+    redirect: "follow",
+  });
+  if (!response.ok) {
+    throw new Error(`Detail page request failed: ${response.status} ${response.statusText}`);
+  }
+  return {
+    url: response.url || url,
+    html: await response.text(),
+  };
+}
+
+function extractClientRedirectUrl(html, baseUrl) {
+  const text = String(html || "");
+  const meta = text.match(/<meta[^>]+http-equiv=["']?refresh["']?[^>]+content=["'][^"']*url=([^"']+)["']/i)?.[1];
+  if (meta) return absoluteUrl(baseUrl, meta.trim());
+
+  const script = text.match(/(?:window\.)?(?:location\.href|location)\s*=\s*["']([^"']+)["']/i)?.[1];
+  if (script) return absoluteUrl(baseUrl, script.trim());
+
+  return "";
 }
 
 function buildApiUrl(source, pathname, params) {
