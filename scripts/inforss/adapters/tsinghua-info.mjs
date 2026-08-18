@@ -72,7 +72,7 @@ export async function fetchTsinghuaInfo(source, options = {}) {
       sourceId: source.id,
       sourceName: source.name,
       stage: "list",
-      message: error instanceof Error ? error.message : String(error),
+      message: errorMessage(error),
       createdAt: new Date().toISOString(),
     });
   }
@@ -448,8 +448,20 @@ function buildError(item, source, stage, error) {
     sourceId: source.id,
     sourceName: source.name,
     stage,
-    message: error instanceof Error ? error.message : String(error),
+    message: errorMessage(error),
     createdAt: new Date().toISOString(),
   };
+}
+
+function errorMessage(error) {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause;
+  if (cause && typeof cause === "object") {
+    const code = "code" in cause ? cause.code : "";
+    const message = "message" in cause ? cause.message : "";
+    const detail = [code, message].filter(Boolean).join(": ");
+    if (detail) return `${error.message} (${detail})`;
+  }
+  return error.message;
 }
 

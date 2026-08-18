@@ -45,7 +45,7 @@ for (const url of urls) {
       sourceId: "direct-detail",
       sourceName: "直接详情页",
       stage: "direct-detail",
-      message: error instanceof Error ? error.message : String(error),
+      message: errorMessage(error),
       createdAt: new Date().toISOString(),
     });
   }
@@ -58,15 +58,16 @@ const posts = uniquePosts(Array.from(existingPostsByUrl.values())).sort(
 await Promise.all(posts.map((post) => writeFile(join(itemsDir, `${post.id}.json`), `${JSON.stringify(post, null, 2)}\n`, "utf-8")));
 
 const generatedAt = new Date().toISOString();
+const mergedErrors = mergeErrors(existingPayload.errors || [], errors, urls);
 const payload = {
   ...existingPayload,
   generatedAt,
   lastScrapeAt: generatedAt,
   total: posts.length,
-  errorCount: (existingPayload.errors || []).length + errors.length,
+  errorCount: mergedErrors.length,
   sources: mergeSources(existingPayload.sources || [], [{ id: "direct-detail", name: "直接详情页" }]),
   tags: Array.from(new Set(posts.map((post) => post.category).filter(Boolean))),
-  errors: [...(existingPayload.errors || []), ...errors],
+  errors: mergedErrors,
   posts,
 };
 
@@ -167,6 +168,18 @@ function preserveExistingContext(post, existing) {
   };
 }
 
+function mergeErrors(existingErrors, currentErrors, requestedUrls) {
+  const requested = new Set(requestedUrls.map((url) => normalizeUrlKey(url)));
+  const kept = existingErrors.filter((error) => {
+    try {
+      return !requested.has(normalizeUrlKey(error.url));
+    } catch {
+      return true;
+    }
+  });
+  return [...kept, ...currentErrors];
+}
+
 function isDirectDetailPost(post) {
   return post?.sourceId === "direct-detail" || post?.category === "直接详情页";
 }
@@ -190,4 +203,16 @@ function normalizeUrlKey(value) {
   url.hash = "";
   url.searchParams.delete("_csrf");
   return url.toString();
+}
+
+function errorMessage(error) {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause;
+  if (cause && typeof cause === "object") {
+    const code = "code" in cause ? cause.code : "";
+    const message = "message" in cause ? cause.message : "";
+    const detail = [code, message].filter(Boolean).join(": ");
+    if (detail) return `${error.message} (${detail})`;
+  }
+  return error.message;
 }

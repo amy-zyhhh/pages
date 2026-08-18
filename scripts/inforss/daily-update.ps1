@@ -113,9 +113,9 @@ try {
   Write-Log "Mode: $Mode"
 
   if ($Mode -eq "month") {
-    Run-Step "Fetch InfoRSS month" "node" @("scripts/inforss/fetch-month.mjs")
+    Run-Step "Fetch InfoRSS month" "node" @("--use-system-ca", "scripts/inforss/fetch-month.mjs")
   } else {
-    Run-Step "Fetch InfoRSS daily" "node" @("scripts/inforss/fetch.mjs", "--daily")
+    Run-Step "Fetch InfoRSS daily" "node" @("--use-system-ca", "scripts/inforss/fetch.mjs", "--daily")
   }
   Run-Step "Build site" "npm.cmd" @("run", "build")
 

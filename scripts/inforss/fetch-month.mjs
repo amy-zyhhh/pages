@@ -9,7 +9,7 @@ const args = parseArgs(process.argv.slice(2));
 const month = args.month || await nextMonth();
 const range = monthRange(month);
 
-await runNode(["scripts/inforss/fetch.mjs", "--from", range.from, "--to", range.to]);
+await runNode(["--use-system-ca", "scripts/inforss/fetch.mjs", "--from", range.from, "--to", range.to]);
 
 if (!args.month && args.advance !== false) {
   await writeFile(statePath, `${JSON.stringify({ nextMonth: previousMonth(month), updatedAt: new Date().toISOString() }, null, 2)}\n`);
