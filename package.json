@@ -8,9 +8,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "fetch:inforss": "node --use-system-ca scripts/inforss/fetch.mjs",
-    "fetch:inforss:daily": "node --use-system-ca scripts/inforss/fetch.mjs --daily",
-    "fetch:inforss:month": "node --use-system-ca scripts/inforss/fetch-month.mjs",
+    "fetch:inforss": "node --use-system-ca scripts/inforss/fetch-local.mjs",
+    "fetch:inforss:daily": "node --use-system-ca scripts/inforss/fetch-local.mjs --daily",
+    "fetch:inforss:month": "node --use-system-ca scripts/inforss/fetch-month-local.mjs",
     "daily:inforss": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/daily-update.ps1",
     "backfill:inforss:month": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/daily-update.ps1 -Mode month",
     "install:inforss-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/inforss/install-daily-task.ps1",

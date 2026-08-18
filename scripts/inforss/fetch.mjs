@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import "./tls-mode.mjs";
 import { fetchTsinghuaInfo } from "./adapters/tsinghua-info.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

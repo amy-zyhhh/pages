@@ -147,13 +147,13 @@ function formatDateTime(value: string) {
 							<time datetime={group.date}>{group.date}</time>
 						</div>
 						{group.posts.map((post) => {
-							const preview = post.summary;
+							const searchPreview = post.summary;
 							return (
 								<ArticlePreviewCard
 									class="notice"
 									href={`${basePath}inforss/${post.slug}/`}
 									title={post.title}
-									summary={preview}
+									summary=""
 									meta={[
 										{ text: post.category },
 										...(post.department ? [{ text: post.department }] : []),
@@ -171,7 +171,7 @@ function formatDateTime(value: string) {
 										"data-full-text": `${post.title} ${post.date} ${post.category} ${post.department} ${post.sourceName || ""} ${post.searchText}`,
 										"data-title-summary-text": `${post.title} ${post.summary} ${post.preview} ${post.titleSummaryText || ""}`,
 										"data-title-text": post.title,
-										"data-preview": preview,
+										"data-preview": searchPreview,
 									}}
 								/>
 							);

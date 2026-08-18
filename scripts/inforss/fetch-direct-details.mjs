@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import "./tls-mode.mjs";
 import { fetchAndParseCicOathDetail, isCicOathDetailUrl } from "./detail-parsers/cic-oath.mjs";
 import { fetchAndParseCareerPosition, isCareerPositionUrl } from "./detail-parsers/career-position.mjs";
 import { fetchAndParseGhxtDetail, isGhxtDetailUrl } from "./detail-parsers/ghxt-detail.mjs";

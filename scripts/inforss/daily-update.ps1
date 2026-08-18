@@ -112,11 +112,23 @@ try {
   Write-Log "Branch: $Branch"
   Write-Log "Mode: $Mode"
 
-  if ($Mode -eq "month") {
-    Run-Step "Fetch InfoRSS month" "node" @("--use-system-ca", "scripts/inforss/fetch-month.mjs")
-  } else {
-    Run-Step "Fetch InfoRSS daily" "node" @("--use-system-ca", "scripts/inforss/fetch.mjs", "--daily")
+  $previousInsecureTls = $env:INFORS_ALLOW_INSECURE_TLS
+  $env:INFORS_ALLOW_INSECURE_TLS = "1"
+  try {
+    if ($Mode -eq "month") {
+      Run-Step "Fetch InfoRSS month" "node" @("--use-system-ca", "scripts/inforss/fetch-month.mjs")
+    } else {
+      Run-Step "Fetch InfoRSS daily" "node" @("--use-system-ca", "scripts/inforss/fetch.mjs", "--daily")
+    }
   }
+  finally {
+    if ($null -eq $previousInsecureTls) {
+      Remove-Item Env:INFORS_ALLOW_INSECURE_TLS -ErrorAction SilentlyContinue
+    } else {
+      $env:INFORS_ALLOW_INSECURE_TLS = $previousInsecureTls
+    }
+  }
+
   Run-Step "Build site" "npm.cmd" @("run", "build")
 
   $stagePaths = @("data-generated/inforss")

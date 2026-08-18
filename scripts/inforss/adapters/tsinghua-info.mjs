@@ -18,10 +18,12 @@ export async function fetchTsinghuaInfo(source, options = {}) {
   const dateRange = options.dateRange || null;
 
   try {
-    await request(source.listPageUrl, { cookieJar });
+    const listPage = await requestPage(source.listPageUrl, { cookieJar });
     const csrf = cookieJar.get("XSRF-TOKEN");
     if (!csrf) {
-      throw new Error("\u672a\u80fd\u4ece\u5217\u8868\u9875 Cookie \u4e2d\u8bfb\u53d6 XSRF-TOKEN");
+      throw new Error(
+        `\u672a\u80fd\u4ece\u5217\u8868\u9875 Cookie \u4e2d\u8bfb\u53d6 XSRF-TOKEN\uff08HTTP ${listPage.status} ${listPage.statusText}\uff09`,
+      );
     }
 
     const pages = getPageLimit(source, dateRange);
@@ -130,7 +132,7 @@ async function fetchDetail(source, item, csrf, cookieJar, existingPostsByUrl) {
   const category = detail.lmmc_show || detail.lmmc || item.lmmc_show || item.lmmc || "\u672a\u5206\u7c7b";
   const department = detail.lydw_show || detail.lydw || item.dwmc_show || item.dwmc || "";
 
-  const externalDetail = await resolveExternalDetail(sourceUrl);
+  const externalDetail = shouldResolveFinalDetail(contentText, sourceUrl) ? await resolveExternalDetail(sourceUrl) : null;
   if (externalDetail) {
     const context = {
       category,
@@ -224,6 +226,10 @@ function uniqueStrings(values) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
+function shouldResolveFinalDetail(contentText, sourceUrl) {
+  return !contentText || Boolean(classifyExternalDetailUrl(sourceUrl));
+}
+
 async function resolveExternalDetail(sourceUrl) {
   if (!sourceUrl) return "";
   const directExternal = classifyExternalDetailUrl(sourceUrl);
@@ -262,7 +268,10 @@ function getExternalDetailParser(type) {
 function shouldProbeDetailRedirect(value) {
   try {
     const url = new URL(value);
-    return url.hostname === "info.tsinghua.edu.cn" && /\/f\/info\/xxfb_fg\/xnzx\/template\/detail/.test(url.pathname);
+    return (
+      url.hostname === "info.tsinghua.edu.cn" &&
+      (/\/f\/info\/xxfb_fg\/xnzx\/template\/detail/.test(url.pathname) || url.pathname === "/f/info/route")
+    );
   } catch {
     return false;
   }
@@ -285,6 +294,25 @@ async function requestHtml(url) {
     url: response.url || url,
     html: await response.text(),
   };
+}
+
+async function requestPage(url, { cookieJar } = {}) {
+  const headers = {
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Cache-Control": "no-cache",
+    Pragma: "no-cache",
+    "User-Agent": USER_AGENT,
+  };
+  if (cookieJar?.size) headers.Cookie = serializeCookies(cookieJar);
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers,
+    redirect: "follow",
+  });
+  updateCookies(cookieJar, response.headers);
+  return response;
 }
 
 function extractClientRedirectUrl(html, baseUrl) {
@@ -335,12 +363,20 @@ async function request(url, { cookieJar, referer } = {}) {
 
 function updateCookies(cookieJar, headers) {
   if (!cookieJar) return;
-  const setCookie = typeof headers.getSetCookie === "function" ? headers.getSetCookie() : [];
+  const setCookie =
+    typeof headers.getSetCookie === "function"
+      ? headers.getSetCookie()
+      : splitSetCookieHeader(headers.get("set-cookie") || "");
   setCookie.forEach((cookie) => {
     const [pair] = cookie.split(";");
     const eq = pair.indexOf("=");
     if (eq > 0) cookieJar.set(pair.slice(0, eq), pair.slice(eq + 1));
   });
+}
+
+function splitSetCookieHeader(value) {
+  if (!value) return [];
+  return String(value).split(/,(?=\s*[^;,=\s]+=[^;,]*)/g);
 }
 
 function serializeCookies(cookieJar) {
