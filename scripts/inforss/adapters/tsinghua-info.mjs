@@ -108,15 +108,7 @@ async function mapLimit(items, limit, task) {
 }
 
 async function fetchDetail(source, item, csrf, cookieJar, existingPostsByUrl) {
-  const detailUrl = buildApiUrl(source, "/b/info/xxfb_fg/xnzx/template/detail", {
-    xxid: item.xxid,
-    preview: "",
-    language_manage: "",
-    _csrf: csrf,
-  });
-
-  const detailPayload = await requestJson(detailUrl, {
-    cookieJar,
+  const detailPayload = await requestPortalDetail(source, item.xxid, csrf, cookieJar, {
     referer: absoluteUrl(source.apiBaseUrl, item.url || source.listPageUrl),
   });
   const detail = detailPayload?.object?.xxDto || item;
@@ -132,41 +124,117 @@ async function fetchDetail(source, item, csrf, cookieJar, existingPostsByUrl) {
   const category = detail.lmmc_show || detail.lmmc || item.lmmc_show || item.lmmc || "\u672a\u5206\u7c7b";
   const department = detail.lydw_show || detail.lydw || item.dwmc_show || item.dwmc || "";
 
-  const externalDetail = shouldResolveFinalDetail(contentText, sourceUrl) ? await resolveExternalDetail(sourceUrl) : null;
-  if (externalDetail) {
-    const context = {
-      category,
-      department,
-      sourceId: source.id,
-      sourceName: source.name,
-      source: source.name,
-    };
-    const cachedExternalPost = existingPostsByUrl.get(normalizeUrlKey(externalDetail.url));
+  const context = {
+    category,
+    department,
+    sourceId: source.id,
+    sourceName: source.name,
+    source: source.name,
+  };
+  const fallback = {
+    title,
+    date,
+    time,
+    category,
+    department,
+    summary,
+    sourceId: source.id,
+    sourceName: source.name,
+    source: source.name,
+    cacheVersion: CACHE_VERSION,
+  };
+  const basePost = buildPortalPost({
+    item,
+    detail,
+    title,
+    date,
+    time,
+    category,
+    department,
+    source,
+    sourceUrl,
+    summary,
+    contentHtml,
+    contentText,
+    attachments,
+  });
 
-    const parseExternalDetail = getExternalDetailParser(externalDetail.type);
-    if (!parseExternalDetail) return null;
-    const externalPost = await parseExternalDetail(externalDetail.url, {
-      source,
-      item,
-      fallback: {
-        title,
+  const finalDetail = shouldResolveFinalDetail(contentText, sourceUrl) ? await resolveFinalDetail(sourceUrl) : null;
+  if (finalDetail?.type === "portal-detail" && normalizeUrlKey(finalDetail.url) !== normalizeUrlKey(sourceUrl)) {
+    const finalPayload = await requestPortalDetail(source, finalDetail.xxid, csrf, cookieJar, {
+      referer: sourceUrl,
+    });
+    const finalPortalDetail = finalPayload?.object?.xxDto || {};
+    const finalContentHtml = decodeHtml(finalPortalDetail.nr_show || finalPortalDetail.nr || "");
+    const finalContentText = htmlToText(finalContentHtml);
+    return {
+      ...buildPortalPost({
+        item,
+        detail: finalPortalDetail,
+        title: decodeHtml(finalPortalDetail.bt_show || finalPortalDetail.bt || title),
         date,
         time,
         category,
         department,
+        source,
+        sourceUrl: finalDetail.url,
         summary,
-        sourceId: source.id,
-        sourceName: source.name,
-        source: source.name,
-        cacheVersion: CACHE_VERSION,
-      },
+        contentHtml: finalContentHtml,
+        contentText: finalContentText,
+        attachments: normalizeAttachments(source.apiBaseUrl, finalPortalDetail.fjs_template || []),
+      }),
+      xxid: finalDetail.xxid,
+      alternateSourceUrls: uniqueStrings([sourceUrl]),
+    };
+  }
+
+  if (finalDetail && finalDetail.type !== "portal-detail") {
+    const cachedExternalPost = existingPostsByUrl.get(normalizeUrlKey(finalDetail.url));
+    const parseExternalDetail = getExternalDetailParser(finalDetail.type);
+    if (!parseExternalDetail) return null;
+    const externalPost = await parseExternalDetail(finalDetail.url, {
+      source,
+      item,
+      fallback,
     });
     return withListContext(preserveExistingContext(externalPost, cachedExternalPost), context, [sourceUrl]);
   }
 
+  return basePost;
+}
+
+async function requestPortalDetail(source, xxid, csrf, cookieJar, { referer } = {}) {
+  const detailUrl = buildApiUrl(source, "/b/info/xxfb_fg/xnzx/template/detail", {
+    xxid,
+    preview: "",
+    language_manage: "",
+    _csrf: csrf,
+  });
+
+  return requestJson(detailUrl, {
+    cookieJar,
+    referer,
+  });
+}
+
+function buildPortalPost({
+  item,
+  detail,
+  title,
+  date,
+  time,
+  category,
+  department,
+  source,
+  sourceUrl,
+  summary,
+  contentHtml,
+  contentText,
+  attachments,
+}) {
   return {
     id: item.xxid,
-    xxid: item.xxid,
+    xxid: detail.xxid || item.xxid,
     slug: item.xxid,
     title,
     date,
@@ -230,19 +298,42 @@ function shouldResolveFinalDetail(contentText, sourceUrl) {
   return !contentText || Boolean(classifyExternalDetailUrl(sourceUrl));
 }
 
-async function resolveExternalDetail(sourceUrl) {
+async function resolveFinalDetail(sourceUrl) {
   if (!sourceUrl) return "";
-  const directExternal = classifyExternalDetailUrl(sourceUrl);
-  if (directExternal) return directExternal;
+  const directDetail = classifyFinalDetailUrl(sourceUrl);
+  if (directDetail) return directDetail;
 
   if (!shouldProbeDetailRedirect(sourceUrl)) return "";
 
   const response = await requestHtml(sourceUrl);
-  const finalExternal = classifyExternalDetailUrl(response.url);
-  if (finalExternal) return finalExternal;
+  const finalDetail = classifyFinalDetailUrl(response.url);
+  if (finalDetail) return finalDetail;
 
   const clientRedirectUrl = extractClientRedirectUrl(response.html, response.url);
-  return classifyExternalDetailUrl(clientRedirectUrl);
+  return classifyFinalDetailUrl(clientRedirectUrl);
+}
+
+function classifyFinalDetailUrl(url) {
+  const portalDetail = classifyPortalDetailUrl(url);
+  if (portalDetail) return portalDetail;
+  return classifyExternalDetailUrl(url);
+}
+
+function classifyPortalDetailUrl(value) {
+  try {
+    const url = new URL(value);
+    const xxid = url.searchParams.get("xxid") || "";
+    if (
+      url.hostname === "info.tsinghua.edu.cn" &&
+      /\/f\/info\/xxfb_fg\/xnzx\/template\/detail/.test(url.pathname) &&
+      xxid
+    ) {
+      return { type: "portal-detail", url: url.toString(), xxid };
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 function classifyExternalDetailUrl(url) {

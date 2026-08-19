@@ -37,12 +37,29 @@ const dateGroups = Array.from(new Set(posts.map((post) => post.date))).map((date
 	date,
 	posts: posts.filter((post) => post.date === date),
 }));
+const todayKey = formatDateKey(new Date());
+const yesterdayKey = formatDateKey(addDays(new Date(), -1));
+const todayCount = posts.filter((post) => post.date === todayKey).length;
+const yesterdayCount = posts.filter((post) => post.date === yesterdayKey).length;
 
 function formatDateTime(value: string) {
 	if (!value) return "暂无";
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return value;
 	return date.toLocaleString("zh-CN", { hour12: false });
+}
+
+function formatDateKey(date: Date) {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${year}${month}${day}`;
+}
+
+function addDays(date: Date, days: number) {
+	const next = new Date(date);
+	next.setDate(next.getDate() + days);
+	return next;
 }
 ---
 
@@ -116,7 +133,8 @@ function formatDateTime(value: string) {
 
 			<section class="status-row" aria-label="InfoRSS 状态">
 				<span>最近更新：{formatDateTime(payload.lastScrapeAt || payload.generatedAt)}</span>
-				<span>收录通知：{payload.total}</span>
+				<span>今日收录：{todayCount}</span>
+				<span>昨日收录：{yesterdayCount}</span>
 				<span>抓取错误：{payload.errorCount}</span>
 			</section>
 

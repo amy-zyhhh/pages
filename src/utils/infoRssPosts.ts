@@ -133,6 +133,7 @@ function displaySourceName(id = "", name = "") {
 }
 
 function normalizePost(post: InfoRssPost): InfoRssPost {
+	const contentHtml = decodeInfoRssEntities(post.contentHtml || "");
 	return {
 		...post,
 		title: decodeInfoRssEntities(post.title),
@@ -140,13 +141,34 @@ function normalizePost(post: InfoRssPost): InfoRssPost {
 		preview: decodeInfoRssEntities(post.preview),
 		titleSummaryText: decodeInfoRssEntities(post.titleSummaryText || ""),
 		searchText: decodeInfoRssEntities(post.searchText),
-		contentHtml: decodeInfoRssEntities(post.contentHtml || ""),
+		contentHtml: normalizeContentResourceUrls(contentHtml, post.sourceUrl),
 		contentText: decodeInfoRssEntities(post.contentText || ""),
 		attachments: post.attachments?.map((attachment) => ({
 			...attachment,
 			name: decodeInfoRssEntities(attachment.name),
 		})),
 	};
+}
+
+function normalizeContentResourceUrls(html: string, sourceUrl = "") {
+	if (!html || !sourceUrl) return html;
+	return html.replace(
+		/(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)(\2)/gi,
+		(match, prefix: string, quote: string, src: string, suffix: string) => {
+			const absoluteSrc = toAbsoluteUrl(src, sourceUrl);
+			return absoluteSrc ? `${prefix}${quote}${absoluteSrc}${suffix}` : match;
+		},
+	);
+}
+
+function toAbsoluteUrl(value: string, baseUrl: string) {
+	const src = value.trim();
+	if (!src || /^(?:data:|blob:|mailto:|tel:)/i.test(src)) return src;
+	try {
+		return new URL(src, baseUrl).toString();
+	} catch {
+		return "";
+	}
 }
 
 export function decodeInfoRssEntities(value = "") {
