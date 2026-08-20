@@ -1,17 +1,3 @@
-- name: XCDD
-  url: https://sudugu.org/1863
-  category: 其他
-  description: 星辰大道页面入口。
-  tag: 小说
-  order: 10
-  icon: sudugu.org
-- name: WDTM
-  url: https://sudugu.org/1667
-  category: 其他
-  description: 无敌天命页面入口。
-  tag: 小说
-  order: 20
-  icon: sudugu.org
 - name: MoonTVPlus
   url: https://moontv.test260729.cloud-ip.cc/
   category: 其他
