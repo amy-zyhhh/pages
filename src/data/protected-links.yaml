@@ -5,6 +5,13 @@
   tag: 视频
   order: 30
   icon: moontv.test260729.cloud-ip.cc
+- name: Clarity
+  url: https://clarity.microsoft.com/
+  category: 其他
+  description: Microsoft Clarity 网站分析入口。
+  tag: 分析
+  order: 35
+  icon: clarity.microsoft.com
 - name: blogs
   url: ../blogs/
   category: 项目
