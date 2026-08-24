@@ -78,6 +78,13 @@
   tag: AI
   order: 45
   icon: chat.deepseek.com
+- name: 颜色选择器
+  url: https://easy-utils.com/color-picker.html
+  category: 常用工具
+  description: 在线颜色选择和颜色值转换工具。
+  tag: 颜色
+  order: 48
+  icon: easy-utils.com
 - name: 临时邮箱
   url: https://beeinbox.com/zh-CN
   category: 常用工具
