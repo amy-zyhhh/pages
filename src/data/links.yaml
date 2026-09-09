@@ -36,6 +36,27 @@
   tag: 门户
   order: 20
   icon: info.tsinghua.edu.cn
+- name: mails
+  url: https://mails.tsinghua.edu.cn
+  category: 清华入口
+  description: 清华邮箱入口。
+  tag: 邮箱
+  order: 22
+  icon: mails.tsinghua.edu.cn
+- name: THOS
+  url: https://thos.tsinghua.edu.cn
+  category: 清华入口
+  description: THOS
+  tag: THOS
+  order: 24
+  icon: thos.tsinghua.edu.cn
+- name: cloud
+  url: https://cloud.tsinghua.edu.cn
+  category: 清华入口
+  description: 清华云盘入口。
+  tag: 云盘
+  order: 26
+  icon: cloud.tsinghua.edu.cn
 - name: SNS
   url: https://wiki.thusns.net
   category: 清华入口
