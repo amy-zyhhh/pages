@@ -36,6 +36,13 @@
   tag: 门户
   order: 20
   icon: info.tsinghua.edu.cn
+- name: 网络学堂
+  url: https://learn.tsinghua.edu.cn
+  category: 清华入口
+  description: 清华网络学堂入口。
+  tag: 学堂
+  order: 21
+  icon: learn.tsinghua.edu.cn
 - name: mails
   url: https://mails.tsinghua.edu.cn
   category: 清华入口
