@@ -120,6 +120,13 @@
   tag: 邮箱
   order: 50
   icon: beeinbox.com
+- name: Connected Papers
+  url: https://www.connectedpapers.com/
+  category: 学术资源
+  description: 通过可视化关系图探索相关论文。
+  tag: 论文
+  order: 40
+  icon: connectedpapers.com
 - name: 谷歌学术
   url: https://scholar.google.com
   category: 学术资源
