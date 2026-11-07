@@ -36,6 +36,13 @@
   tag: 门户
   order: 20
   icon: info.tsinghua.edu.cn
+- name: 清华知道
+  url: https://pkuknow.cn/thu
+  category: 清华入口
+  description: 清华校园活动与通知聚合入口。
+  tag: 通知
+  order: 20.5
+  icon: pkuknow.cn
 - name: 网络学堂
   url: https://learn.tsinghua.edu.cn
   category: 清华入口
