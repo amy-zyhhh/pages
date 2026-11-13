@@ -120,6 +120,13 @@
   tag: 颜色
   order: 48
   icon: easy-utils.com
+- name: 配色工具
+  url: https://color.amfe.space/
+  category: 常用工具
+  description: 在线配色与颜色方案生成工具。
+  tag: 配色
+  order: 49
+  icon: color.amfe.space
 - name: 临时邮箱
   url: https://beeinbox.com/zh-CN
   category: 常用工具
